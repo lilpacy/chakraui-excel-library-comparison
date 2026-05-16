@@ -29,19 +29,20 @@ type ColumnDefinition = {
   title: string;
   width: number;
   kind: "text" | "number" | "currency";
+  headerToneVar: string;
 };
 
 const gridColumns: readonly ColumnDefinition[] = [
-  { key: "orderId", title: "Order ID", width: 88, kind: "text" },
-  { key: "orderDate", title: "Date", width: 92, kind: "text" },
-  { key: "customer", title: "Customer", width: 135, kind: "text" },
-  { key: "region", title: "Region", width: 92, kind: "text" },
-  { key: "rep", title: "Sales Rep", width: 106, kind: "text" },
-  { key: "category", title: "Category", width: 99, kind: "text" },
-  { key: "product", title: "Product", width: 131, kind: "text" },
-  { key: "quantity", title: "Qty", width: 59, kind: "number" },
-  { key: "unitPrice", title: "Unit Price", width: 79, kind: "currency" },
-  { key: "status", title: "Status", width: 87, kind: "text" },
+  { key: "orderId", title: "Order ID", width: 88, kind: "text", headerToneVar: "--ds-color-accent-blue-bg" },
+  { key: "orderDate", title: "Date", width: 92, kind: "text", headerToneVar: "--ds-color-accent-yellow-bg" },
+  { key: "customer", title: "Customer", width: 135, kind: "text", headerToneVar: "--ds-color-accent-green-bg" },
+  { key: "region", title: "Region", width: 92, kind: "text", headerToneVar: "--ds-color-accent-fuchsia-bg" },
+  { key: "rep", title: "Sales Rep", width: 106, kind: "text", headerToneVar: "--ds-color-accent-aqua-bg" },
+  { key: "category", title: "Category", width: 99, kind: "text", headerToneVar: "--ds-color-accent-orange-bg" },
+  { key: "product", title: "Product", width: 131, kind: "text", headerToneVar: "--ds-color-accent-iris-bg" },
+  { key: "quantity", title: "Qty", width: 59, kind: "number", headerToneVar: "--ds-color-accent-red-bg" },
+  { key: "unitPrice", title: "Unit Price", width: 79, kind: "currency", headerToneVar: "--ds-color-accent-lime-bg" },
+  { key: "status", title: "Status", width: 87, kind: "text", headerToneVar: "--ds-color-accent-magenta-bg" },
 ] as const;
 
 const gridHeight = 418;
@@ -84,6 +85,7 @@ function makeNumberCell(value: number, displayData = String(value)): NumberCell 
     data: value,
     displayData,
     thousandSeparator: true,
+    contentAlign: "right",
   };
 }
 
@@ -148,6 +150,23 @@ export function GlideDataGridSalesTableClient({
         id: column.key,
         title: column.title,
         width: column.width,
+        themeOverride: {
+          bgHeader: readCssVar(
+            getComputedStyle(document.documentElement),
+            column.headerToneVar,
+            "#f5f5f5",
+          ),
+          bgHeaderHovered: readCssVar(
+            getComputedStyle(document.documentElement),
+            column.headerToneVar,
+            "#f5f5f5",
+          ),
+          bgHeaderHasFocus: readCssVar(
+            getComputedStyle(document.documentElement),
+            column.headerToneVar,
+            "#f5f5f5",
+          ),
+        },
       })),
     [],
   );
@@ -205,6 +224,14 @@ export function GlideDataGridSalesTableClient({
       }
 
       switch (column.key) {
+        case "orderId":
+          return {
+            ...makeTextCell(row.orderId),
+            themeOverride: {
+              fontFamily: "var(--font-geist-mono), monospace",
+              baseFontStyle: "12px var(--font-geist-mono), monospace",
+            },
+          };
         case "quantity":
           return makeNumberCell(row.quantity);
         case "unitPrice":
