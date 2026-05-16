@@ -51,6 +51,7 @@
     "@emotion/react": "^11.14.0",
     "@handsontable/react-wrapper": "^17.0.1",
     "@opennextjs/cloudflare": "^1.14.7",
+    "ag-grid-react": "^35.3.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.5",
     "handsontable": "^17.0.1",

@@ -33,3 +33,18 @@ a {
 body {
   -webkit-font-smoothing: antialiased;
 }
+
+.ag-grid-comparison .ag-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ag-grid-comparison .ag-header-cell-label,
+.ag-grid-comparison .ag-cell-value {
+  white-space: nowrap;
+}
+
+.ag-grid-comparison .ag-grid-order-id .ag-cell-value {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+}
