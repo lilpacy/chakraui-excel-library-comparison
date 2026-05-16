@@ -36,8 +36,8 @@ const inputStyles = {
   fontFamily: "inherit",
   fontSize: "inherit",
   lineHeight: "inherit",
-  minW: "0",
-  w: "full",
+  minW: "unset",
+  w: "auto",
   h: "auto",
   px: "0",
   py: "0",
@@ -60,8 +60,11 @@ const selectFieldStyles = {
   lineHeight: "inherit",
   minWidth: 0,
   padding: "0 1.25rem 0 0",
-  width: "100%",
 };
+
+function getContentWidth(value: string | number, minimumCharacters: number) {
+  return `${Math.max(String(value).length + 1, minimumCharacters)}ch`;
+}
 
 export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
   const [rows, setRows] = useState(initialRows);
@@ -78,7 +81,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
 
   return (
     <Table.ScrollArea maxW="100%">
-      <Table.Root size="sm" variant="outline" striped>
+      <Table.Root minW="max-content" size="sm" variant="outline" striped>
         <Table.Header>
           <Table.Row bg="gray.50">
             <Table.ColumnHeader {...gridCellStyles}>Order ID</Table.ColumnHeader>
@@ -105,6 +108,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
                   {...inputStyles}
                   fontFamily="mono"
                   fontSize="xs"
+                  style={{ width: getContentWidth(row.orderId, 10) }}
                   value={row.orderId}
                   onChange={(event) => updateRow(row.orderId, "orderId", event.target.value)}
                 />
@@ -112,6 +116,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.orderDate, 11) }}
                   value={row.orderDate}
                   onChange={(event) => updateRow(row.orderId, "orderDate", event.target.value)}
                 />
@@ -119,6 +124,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.customer, 22) }}
                   value={row.customer}
                   onChange={(event) => updateRow(row.orderId, "customer", event.target.value)}
                 />
@@ -126,6 +132,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.region, 10) }}
                   value={row.region}
                   onChange={(event) => updateRow(row.orderId, "region", event.target.value)}
                 />
@@ -133,6 +140,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.rep, 14) }}
                   value={row.rep}
                   onChange={(event) => updateRow(row.orderId, "rep", event.target.value)}
                 />
@@ -140,6 +148,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.category, 13) }}
                   value={row.category}
                   onChange={(event) => updateRow(row.orderId, "category", event.target.value)}
                 />
@@ -147,6 +156,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.product, 22) }}
                   value={row.product}
                   onChange={(event) => updateRow(row.orderId, "product", event.target.value)}
                 />
@@ -154,6 +164,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles} textAlign="end">
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.quantity, 5) }}
                   type="number"
                   textAlign="end"
                   value={row.quantity}
@@ -165,6 +176,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
               <Table.Cell {...gridCellStyles} textAlign="end">
                 <Input
                   {...inputStyles}
+                  style={{ width: getContentWidth(row.unitPrice, 7) }}
                   type="number"
                   textAlign="end"
                   value={row.unitPrice}
@@ -174,9 +186,12 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
                 />
               </Table.Cell>
               <Table.Cell {...gridCellStyles}>
-                <Box position="relative">
+                <Box display="inline-block" position="relative">
                   <select
-                    style={selectFieldStyles}
+                    style={{
+                      ...selectFieldStyles,
+                      width: getContentWidth(row.status, 13),
+                    }}
                     value={row.status}
                     onChange={(event) =>
                       updateRow(
