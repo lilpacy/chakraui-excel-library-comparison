@@ -30,12 +30,43 @@ const gridCellStyles = {
 };
 
 const inputStyles = {
-  variant: "subtle" as const,
-  size: "sm" as const,
+  unstyled: true,
   bg: "transparent",
-  border: "none",
-  borderRadius: "none",
-  minW: "max-content",
+  color: "inherit",
+  fontFamily: "inherit",
+  fontSize: "inherit",
+  lineHeight: "inherit",
+  minW: "0",
+  w: "full",
+  h: "auto",
+  px: "0",
+  py: "0",
+  _focusVisible: {
+    outline: "2px solid",
+    outlineColor: "blue.400",
+    outlineOffset: "2px",
+    borderRadius: "sm",
+  },
+};
+
+const selectFieldStyles = {
+  unstyled: true,
+  bg: "transparent",
+  color: "inherit",
+  fontFamily: "inherit",
+  fontSize: "inherit",
+  lineHeight: "inherit",
+  minW: "0",
+  w: "full",
+  h: "auto",
+  px: "0",
+  py: "0",
+  _focusVisible: {
+    outline: "2px solid",
+    outlineColor: "blue.400",
+    outlineOffset: "2px",
+    borderRadius: "sm",
+  },
 };
 
 export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
@@ -75,56 +106,58 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
         <Table.Body>
           {rows.map((row) => (
             <Table.Row key={row.orderId}>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles} fontFamily="mono" fontSize="xs">
                 <Input
                   {...inputStyles}
+                  fontFamily="mono"
+                  fontSize="xs"
                   value={row.orderId}
                   onChange={(event) => updateRow(row.orderId, "orderId", event.target.value)}
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
                   value={row.orderDate}
                   onChange={(event) => updateRow(row.orderId, "orderDate", event.target.value)}
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
                   value={row.customer}
                   onChange={(event) => updateRow(row.orderId, "customer", event.target.value)}
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
                   value={row.region}
                   onChange={(event) => updateRow(row.orderId, "region", event.target.value)}
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
                   value={row.rep}
                   onChange={(event) => updateRow(row.orderId, "rep", event.target.value)}
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
                   value={row.category}
                   onChange={(event) => updateRow(row.orderId, "category", event.target.value)}
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles}>
                 <Input
                   {...inputStyles}
                   value={row.product}
                   onChange={(event) => updateRow(row.orderId, "product", event.target.value)}
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles} textAlign="end">
                 <Input
                   {...inputStyles}
                   type="number"
@@ -135,7 +168,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
                   }
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
+              <Table.Cell {...gridCellStyles} textAlign="end">
                 <Input
                   {...inputStyles}
                   type="number"
@@ -146,12 +179,10 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
                   }
                 />
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} p="0">
-                <NativeSelect.Root size="sm" variant="subtle">
+              <Table.Cell {...gridCellStyles}>
+                <NativeSelect.Root unstyled>
                   <NativeSelect.Field
-                    bg="transparent"
-                    border="none"
-                    borderRadius="none"
+                    {...selectFieldStyles}
                     value={row.status}
                     onChange={(event) =>
                       updateRow(row.orderId, "status", event.target.value as SalesOrderStatus)
