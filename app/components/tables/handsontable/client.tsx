@@ -219,10 +219,10 @@ function coerceRow(value: Partial<SalesOrderRow> & Record<string, unknown>): Sal
 }
 
 function rollbackChanges(
-  rowIndex: number,
+  physicalRowIndex: number,
   row: SalesOrderRow,
 ): Array<[number, ColumnKey, SalesOrderRow[ColumnKey]]> {
-  return columnKeys.map((key) => [rowIndex, key, row[key]]);
+  return columnKeys.map((key) => [physicalRowIndex, key, row[key]]);
 }
 
 function handleAfterGetColHeader(column: number, th: HTMLTableCellElement) {
@@ -265,33 +265,40 @@ export function HandsontableSalesTableClient({
     }
 
     const hotInstance = hotRef.current.hotInstance;
-    const changedRows = new Set<number>();
+    const changedPhysicalRows = new Set<number>();
 
     for (const [rowIndex, prop, oldValue, newValue] of changes) {
       if (oldValue !== newValue && isColumnKey(prop)) {
-        changedRows.add(rowIndex);
+        const physicalRowIndex = hotInstance.toPhysicalRow(rowIndex);
+
+        if (physicalRowIndex >= 0) {
+          changedPhysicalRows.add(physicalRowIndex);
+        }
       }
     }
 
-    if (changedRows.size === 0) {
+    if (changedPhysicalRows.size === 0) {
       return;
     }
 
     setSaveError(null);
 
     startTransition(async () => {
-      for (const rowIndex of changedRows) {
-        const previousRow = cloneRow(rowsRef.current[rowIndex]);
+      for (const physicalRowIndex of changedPhysicalRows) {
+        const previousRow = cloneRow(rowsRef.current[physicalRowIndex]);
         const nextRow = coerceRow(
-          hotInstance.getSourceDataAtRow(rowIndex) as Partial<SalesOrderRow> &
+          hotInstance.getSourceDataAtRow(physicalRowIndex) as Partial<SalesOrderRow> &
             Record<string, unknown>,
         );
 
         try {
           await updateSalesOrder(previousRow.orderId, nextRow);
-          rowsRef.current[rowIndex] = cloneRow(nextRow);
+          rowsRef.current[physicalRowIndex] = cloneRow(nextRow);
         } catch (error) {
-          hotInstance.setDataAtRowProp(rollbackChanges(rowIndex, previousRow), "rollback");
+          hotInstance.setSourceDataAtCell(
+            rollbackChanges(physicalRowIndex, previousRow),
+            "rollback",
+          );
           setSaveError(error instanceof Error ? error.message : "Failed to save sales order");
         }
       }
@@ -311,6 +318,9 @@ export function HandsontableSalesTableClient({
         height="auto"
         stretchH="all"
         readOnly={isPending}
+        filters
+        dropdownMenu
+        columnSorting
         licenseKey="non-commercial-and-evaluation"
         themeName="ht-theme-main"
         textEllipsis
