@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { Fragment, useEffect, useState, useTransition } from "react";
 import {
   Badge,
   Box,
-  Button,
   EditableArea,
   EditableInput,
   EditablePreview,
@@ -15,6 +14,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import {
+  type ColumnFiltersState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -59,6 +59,7 @@ type EditingCell = {
 type SalesTableColumnMeta = {
   column: ColumnKey;
   editor: "text" | "number" | "status";
+  filter: "text" | "number" | "status";
   headerIndex: number;
   textAlign?: "end";
   fontFamily?: "mono";
@@ -131,9 +132,14 @@ function createTextColumn(
     meta: {
       column: key,
       editor: "text",
+      filter: "text",
       headerIndex,
       ...options,
     } satisfies SalesTableColumnMeta,
+    filterFn: (row, columnId, filterValue) =>
+      String(row.getValue(columnId) ?? "")
+        .toLowerCase()
+        .includes(String(filterValue ?? "").toLowerCase()),
     cell: ({ getValue, row, table }) => {
       const meta = getTableMeta(table);
       const value = getValue();
@@ -175,9 +181,17 @@ function createNumberColumn(
     meta: {
       column: key,
       editor: "number",
+      filter: "number",
       headerIndex,
       textAlign: "end",
     } satisfies SalesTableColumnMeta,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue === undefined || filterValue === "") {
+        return true;
+      }
+
+      return Number(row.getValue(columnId)) === Number(filterValue);
+    },
     cell: ({ getValue, row, table }) => {
       const meta = getTableMeta(table);
       const rowKey = row.original.__rowKey;
@@ -219,8 +233,16 @@ const columns = [
     meta: {
       column: "status",
       editor: "status",
+      filter: "status",
       headerIndex: 9,
     } satisfies SalesTableColumnMeta,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue === undefined || filterValue === "") {
+        return true;
+      }
+
+      return String(row.getValue(columnId)) === String(filterValue);
+    },
     cell: ({ getValue, row, table }) => {
       const meta = getTableMeta(table);
       const rowKey = row.original.__rowKey;
@@ -278,7 +300,7 @@ export function TanStackSalesTableClient({
 }: TanStackSalesTableClientProps) {
   const [rows, setRows] = useState(() => toTableRows(initialRows));
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [isPending, startTransition] = useTransition();
   const [editingCell, setEditingCell] = useState<EditingCell>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -286,7 +308,7 @@ export function TanStackSalesTableClient({
   useEffect(() => {
     setRows(toTableRows(initialRows));
     setSorting([]);
-    setGlobalFilter("");
+    setColumnFilters([]);
     setEditingCell(null);
     setSaveError(null);
   }, [initialRows]);
@@ -419,20 +441,14 @@ export function TanStackSalesTableClient({
     columns,
     state: {
       sorting,
-      globalFilter,
+      columnFilters,
     },
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getRowId: (row) => row.__rowKey,
-    globalFilterFn: (row, columnId, filterValue) => {
-      const cellValue = row.getValue(columnId);
-      return String(cellValue ?? "")
-        .toLowerCase()
-        .includes(String(filterValue).toLowerCase());
-    },
     meta: {
       isEditing,
       startEditing,
@@ -448,47 +464,80 @@ export function TanStackSalesTableClient({
 
   return (
     <Box className="tanstack-comparison">
-      <HStack mb="4" px="4" pt="4">
-        <Input
-          maxW="sm"
-          placeholder="Filter all columns..."
-          size="sm"
-          value={globalFilter}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-        />
-        <Button size="sm" variant="outline" onClick={() => setGlobalFilter("")}>
-          Clear
-        </Button>
-      </HStack>
       <Table.ScrollArea maxW="100%">
         <Table.Root size="sm" variant="outline">
           <Table.Header>
             {table.getHeaderGroups().map((headerGroup) => (
-              <Table.Row key={headerGroup.id} {...tableHeaderRowProps}>
-                {headerGroup.headers.map((header) => {
-                  const meta = header.column.columnDef.meta as SalesTableColumnMeta;
-                  const sortState = header.column.getIsSorted();
+              <Fragment key={headerGroup.id}>
+                <Table.Row key={headerGroup.id} {...tableHeaderRowProps}>
+                  {headerGroup.headers.map((header) => {
+                    const meta = header.column.columnDef.meta as SalesTableColumnMeta;
+                    const sortState = header.column.getIsSorted();
+                    const filterValue = header.column.getFilterValue();
+                    const hasFilterValue =
+                      filterValue !== undefined && filterValue !== null && String(filterValue) !== "";
 
-                  return (
-                    <Table.ColumnHeader
-                      key={header.id}
-                      {...gridCellStyles}
-                      {...getSalesTableHeaderCellProps(meta.headerIndex)}
-                      cursor={header.column.getCanSort() ? "pointer" : undefined}
-                      textAlign={meta.textAlign}
-                      userSelect="none"
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      <HStack gap="2" justify={meta.textAlign === "end" ? "flex-end" : "flex-start"}>
-                        <Text>{flexRender(header.column.columnDef.header, header.getContext())}</Text>
-                        <Text color="fg.subtle" fontSize="xs" minW="3">
-                          {sortState === "asc" ? "▲" : sortState === "desc" ? "▼" : ""}
-                        </Text>
-                      </HStack>
-                    </Table.ColumnHeader>
-                  );
-                })}
-              </Table.Row>
+                    return (
+                      <Table.ColumnHeader
+                        key={header.id}
+                        {...gridCellStyles}
+                        {...getSalesTableHeaderCellProps(meta.headerIndex)}
+                        cursor={header.column.getCanSort() ? "pointer" : undefined}
+                        textAlign={meta.textAlign}
+                        userSelect="none"
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <HStack gap="2" justify={meta.textAlign === "end" ? "flex-end" : "flex-start"}>
+                          <Text>{flexRender(header.column.columnDef.header, header.getContext())}</Text>
+                          <Text color={hasFilterValue ? "blue.600" : "fg.subtle"} fontSize="xs">
+                            □
+                          </Text>
+                          <Text color="fg.subtle" fontSize="xs" minW="3">
+                            {sortState === "asc" ? "▲" : sortState === "desc" ? "▼" : ""}
+                          </Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                    );
+                  })}
+                </Table.Row>
+                <Table.Row key={`${headerGroup.id}-filters`} bg="bg">
+                  {headerGroup.headers.map((header) => {
+                    const meta = header.column.columnDef.meta as SalesTableColumnMeta;
+                    const filterValue = header.column.getFilterValue();
+
+                    return (
+                      <Table.Cell key={`${header.id}-filter`} {...gridCellStyles}>
+                        {meta.filter === "status" ? (
+                          <select
+                            style={selectFieldStyles}
+                            value={String(filterValue ?? "")}
+                            onChange={(event) =>
+                              header.column.setFilterValue(event.target.value || undefined)
+                            }
+                          >
+                            <option value="">All</option>
+                            {salesOrderStatuses.map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Input
+                            size="sm"
+                            type={meta.filter === "number" ? "number" : "text"}
+                            value={String(filterValue ?? "")}
+                            placeholder={meta.filter === "number" ? "Equals..." : "Contains..."}
+                            onChange={(event) =>
+                              header.column.setFilterValue(event.target.value || undefined)
+                            }
+                          />
+                        )}
+                      </Table.Cell>
+                    );
+                  })}
+                </Table.Row>
+              </Fragment>
             ))}
           </Table.Header>
           <Table.Body>
