@@ -45,7 +45,7 @@ export default async function Home() {
 
           <Box>
             <Text as="h2" {...sectionTitleProps}>
-              Static Table
+              Raw Chakra Static Table
             </Text>
             <Text mt="2" {...sectionDescriptionProps}>
               The original display-only table.
@@ -58,7 +58,7 @@ export default async function Home() {
 
           <Box>
             <Text as="h2" {...sectionTitleProps}>
-              Editable Table
+              Raw Chakra Editable Table
             </Text>
             <Text mt="2" {...sectionDescriptionProps}>
               A second table that renders inputs in each body cell for DOM comparison.
