@@ -1,5 +1,6 @@
 import { Badge, Table } from "@chakra-ui/react";
 import {
+  getSalesTableHeaderCellProps,
   gridCellStyles,
   salesStatusColorPalette,
   tableHeaderRowProps,
@@ -21,23 +22,47 @@ const statusColorPalette: Record<SalesOrderStatus, string> = salesStatusColorPal
 export function StaticSalesTable({ rows }: StaticSalesTableProps) {
   return (
     <Table.ScrollArea maxW="100%">
-      <Table.Root size="sm" variant="outline" striped>
+      <Table.Root size="sm" variant="outline">
         <Table.Header>
           <Table.Row {...tableHeaderRowProps}>
-            <Table.ColumnHeader {...gridCellStyles}>Order ID</Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles}>Date</Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles}>Customer</Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles}>Region</Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles}>Sales Rep</Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles}>Category</Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles}>Product</Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles} textAlign="end">
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(0)}>
+              Order ID
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(1)}>
+              Date
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(2)}>
+              Customer
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(3)}>
+              Region
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(4)}>
+              Sales Rep
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(5)}>
+              Category
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(6)}>
+              Product
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              {...gridCellStyles}
+              {...getSalesTableHeaderCellProps(7)}
+              textAlign="end"
+            >
               Qty
             </Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles} textAlign="end">
+            <Table.ColumnHeader
+              {...gridCellStyles}
+              {...getSalesTableHeaderCellProps(8)}
+              textAlign="end"
+            >
               Unit Price
             </Table.ColumnHeader>
-            <Table.ColumnHeader {...gridCellStyles}>Status</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} {...getSalesTableHeaderCellProps(9)}>
+              Status
+            </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>

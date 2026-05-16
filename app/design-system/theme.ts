@@ -407,8 +407,6 @@ const globalCss = defineGlobalStyles({
     "--ht-header-row-active-background-color": "var(--ds-color-bg-muted)",
     "--ht-header-active-foreground-color": "var(--ds-color-fg-primary)",
     "--ht-header-row-active-foreground-color": "var(--ds-color-fg-primary)",
-    "--ht-row-cell-odd-background-color": "var(--ds-color-bg-subtle)",
-    "--ht-row-cell-even-background-color": "var(--ds-color-bg-panel)",
     "--ht-input-background-color": "var(--ds-color-bg-panel)",
     "--ht-input-foreground-color": "var(--ds-color-fg-primary)",
     "--ht-input-border-color": "var(--ds-color-border-emphasized)",
@@ -447,6 +445,36 @@ const globalCss = defineGlobalStyles({
   },
   ".handsontable-comparison .handsontable th.ds-ht-column-header--numeric": {
     textAlign: "end",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-blue": {
+    backgroundColor: "var(--ds-color-accent-blue-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-yellow": {
+    backgroundColor: "var(--ds-color-accent-yellow-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-green": {
+    backgroundColor: "var(--ds-color-accent-green-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-fuchsia": {
+    backgroundColor: "var(--ds-color-accent-fuchsia-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-aqua": {
+    backgroundColor: "var(--ds-color-accent-aqua-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-orange": {
+    backgroundColor: "var(--ds-color-accent-orange-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-iris": {
+    backgroundColor: "var(--ds-color-accent-iris-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-red": {
+    backgroundColor: "var(--ds-color-accent-red-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-lime": {
+    backgroundColor: "var(--ds-color-accent-lime-bg)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--tone-magenta": {
+    backgroundColor: "var(--ds-color-accent-magenta-bg)",
   },
   ".handsontable-comparison .handsontable td.ds-ht-cell--order-id": {
     fontFamily: "var(--ds-font-family-mono)",

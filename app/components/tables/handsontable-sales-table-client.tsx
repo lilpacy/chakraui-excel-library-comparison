@@ -76,6 +76,30 @@ function salesStatusRenderer(
 
 const textColumnHeaderClassName = "ds-ht-column-header";
 const numericColumnHeaderClassName = "ds-ht-column-header ds-ht-column-header--numeric";
+const headerToneClassNames = [
+  "ds-ht-column-header--tone-blue",
+  "ds-ht-column-header--tone-yellow",
+  "ds-ht-column-header--tone-green",
+  "ds-ht-column-header--tone-fuchsia",
+  "ds-ht-column-header--tone-aqua",
+  "ds-ht-column-header--tone-orange",
+  "ds-ht-column-header--tone-iris",
+  "ds-ht-column-header--tone-red",
+  "ds-ht-column-header--tone-lime",
+  "ds-ht-column-header--tone-magenta",
+] as const;
+const headerToneBackgroundVars = [
+  "var(--ds-color-accent-blue-bg)",
+  "var(--ds-color-accent-yellow-bg)",
+  "var(--ds-color-accent-green-bg)",
+  "var(--ds-color-accent-fuchsia-bg)",
+  "var(--ds-color-accent-aqua-bg)",
+  "var(--ds-color-accent-orange-bg)",
+  "var(--ds-color-accent-iris-bg)",
+  "var(--ds-color-accent-red-bg)",
+  "var(--ds-color-accent-lime-bg)",
+  "var(--ds-color-accent-magenta-bg)",
+] as const;
 
 const columns: ColumnSettings[] = [
   {
@@ -83,20 +107,50 @@ const columns: ColumnSettings[] = [
     type: "text",
     width: 88,
     className: "ds-ht-cell--order-id",
-    headerClassName: textColumnHeaderClassName,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-blue`,
   },
-  { data: "orderDate", type: "text", width: 92, headerClassName: textColumnHeaderClassName },
-  { data: "customer", type: "text", width: 135, headerClassName: textColumnHeaderClassName },
-  { data: "region", type: "text", width: 92, headerClassName: textColumnHeaderClassName },
-  { data: "rep", type: "text", width: 106, headerClassName: textColumnHeaderClassName },
-  { data: "category", type: "text", width: 99, headerClassName: textColumnHeaderClassName },
-  { data: "product", type: "text", width: 131, headerClassName: textColumnHeaderClassName },
+  {
+    data: "orderDate",
+    type: "text",
+    width: 92,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-yellow`,
+  },
+  {
+    data: "customer",
+    type: "text",
+    width: 135,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-green`,
+  },
+  {
+    data: "region",
+    type: "text",
+    width: 92,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-fuchsia`,
+  },
+  {
+    data: "rep",
+    type: "text",
+    width: 106,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-aqua`,
+  },
+  {
+    data: "category",
+    type: "text",
+    width: 99,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-orange`,
+  },
+  {
+    data: "product",
+    type: "text",
+    width: 131,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-iris`,
+  },
   {
     data: "quantity",
     type: "numeric",
     width: 59,
     className: "htRight htNumeric ds-ht-cell--numeric",
-    headerClassName: numericColumnHeaderClassName,
+    headerClassName: `${numericColumnHeaderClassName} ds-ht-column-header--tone-red`,
     locale: "ja-JP",
     numericFormat: { maximumFractionDigits: 0, useGrouping: true },
   },
@@ -105,7 +159,7 @@ const columns: ColumnSettings[] = [
     type: "numeric",
     width: 79,
     className: "htRight htNumeric ds-ht-cell--numeric",
-    headerClassName: numericColumnHeaderClassName,
+    headerClassName: `${numericColumnHeaderClassName} ds-ht-column-header--tone-lime`,
     locale: "ja-JP",
     numericFormat: {
       style: "currency",
@@ -118,7 +172,7 @@ const columns: ColumnSettings[] = [
     type: "dropdown",
     width: 87,
     className: "ds-ht-cell--status",
-    headerClassName: textColumnHeaderClassName,
+    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-magenta`,
     renderer: salesStatusRenderer,
     source: [...salesOrderStatuses],
     strict: true,
@@ -169,6 +223,20 @@ function rollbackChanges(
   row: SalesOrderRow,
 ): Array<[number, ColumnKey, SalesOrderRow[ColumnKey]]> {
   return columnKeys.map((key) => [rowIndex, key, row[key]]);
+}
+
+function handleAfterGetColHeader(column: number, th: HTMLTableCellElement) {
+  if (column < 0) {
+    return;
+  }
+
+  th.classList.add(textColumnHeaderClassName, headerToneClassNames[column]);
+  th.style.backgroundColor = headerToneBackgroundVars[column];
+  th.style.textAlign = column === 7 || column === 8 ? "end" : "start";
+
+  if (column === 7 || column === 8) {
+    th.classList.add("ds-ht-column-header--numeric");
+  }
 }
 
 export function HandsontableSalesTableClient({
@@ -247,6 +315,7 @@ export function HandsontableSalesTableClient({
         themeName="ht-theme-main"
         textEllipsis
         afterChange={handleAfterChange}
+        afterGetColHeader={handleAfterGetColHeader}
       />
       {(isPending || saveError) && (
         <Text px="4" py="3" color={saveError ? "fg.error" : "fg.muted"} fontSize="sm">

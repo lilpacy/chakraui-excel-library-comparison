@@ -73,6 +73,48 @@ export const tableHeaderRowProps = {
   bg: "bg.subtle",
 } as const;
 
+export const salesTableHeaderToneSequence = [
+  "blue",
+  "yellow",
+  "green",
+  "fuchsia",
+  "aqua",
+  "orange",
+  "iris",
+  "red",
+  "lime",
+  "magenta",
+  "teal",
+  "lightgray",
+  "purple",
+  "darkgray",
+] as const;
+
+const salesTableHeaderBackgroundByTone = {
+  blue: "blue.subtle",
+  yellow: "yellow.subtle",
+  green: "green.subtle",
+  fuchsia: "fuchsia.subtle",
+  aqua: "aqua.subtle",
+  orange: "orange.subtle",
+  iris: "iris.subtle",
+  red: "red.subtle",
+  lime: "lime.subtle",
+  magenta: "magenta.subtle",
+  teal: "teal.subtle",
+  lightgray: "gray.100",
+  purple: "purple.subtle",
+  darkgray: "gray.300",
+} as const;
+
+export function getSalesTableHeaderCellProps(columnIndex: number) {
+  const tone = salesTableHeaderToneSequence[columnIndex % salesTableHeaderToneSequence.length];
+
+  return {
+    bg: salesTableHeaderBackgroundByTone[tone],
+  } as const;
+}
+
 export const editableInputStyles = {
   unstyled: true,
   bg: "transparent",
