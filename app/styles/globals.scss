@@ -179,7 +179,7 @@ body {
 .react-datasheet-grid-comparison .dsg-cell,
 .react-datasheet-grid-comparison .dsg-cell-header {
   white-space: nowrap;
-  line-height: 20px;
+  line-height: 18px;
 }
 
 .react-datasheet-grid-comparison .dsg-row {
@@ -211,8 +211,8 @@ body {
 }
 
 .react-datasheet-grid-comparison .dsg-cell-header-container {
-  padding-inline: 16px 10px;
-  line-height: 20px;
+  padding-inline: 8px;
+  line-height: 18px;
 }
 
 .react-datasheet-grid-comparison .rdsg-header-tone {
@@ -272,8 +272,8 @@ body {
   box-shadow: none;
   color: inherit;
   font: inherit;
-  line-height: 20px;
-  padding-inline: 16px 10px;
+  line-height: 18px;
+  padding-inline: 8px;
 }
 
 .react-datasheet-grid-comparison .dsg-input:focus {
