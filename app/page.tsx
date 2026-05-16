@@ -3,6 +3,7 @@ import { Box, Container, Text, VStack } from "@chakra-ui/react";
 import { AgGridSalesTable } from "@/app/components/tables/ag-grid";
 import { EditableSalesTable } from "@/app/components/tables/editable-sales-table";
 import { HandsontableSalesTable } from "@/app/components/tables/handsontable";
+import { ReactDataSheetGridSalesTable } from "@/app/components/tables/react-datasheet-grid";
 import { StaticSalesTable } from "@/app/components/tables/static-sales-table";
 import {
   dataGridBoxProps,
@@ -91,6 +92,19 @@ export default async function Home() {
 
           <Box {...dataGridBoxProps}>
             <AgGridSalesTable initialRows={salesRows} />
+          </Box>
+
+          <Box>
+            <Text as="h2" {...sectionTitleProps}>
+              React Datasheet Grid Table
+            </Text>
+            <Text mt="2" {...sectionDescriptionProps}>
+              An editable React Datasheet Grid instance appended for DOM comparison.
+            </Text>
+          </Box>
+
+          <Box {...dataGridBoxProps}>
+            <ReactDataSheetGridSalesTable initialRows={salesRows} />
           </Box>
         </VStack>
       </Container>

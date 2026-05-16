@@ -153,3 +153,29 @@ body {
 .ag-grid-comparison .ag-grid-header-tone--magenta {
   background: var(--ds-color-accent-magenta-bg);
 }
+
+.react-datasheet-grid-comparison {
+  --dsg-header-text-color: var(--ds-color-fg-default);
+  --dsg-cell-color: var(--ds-color-fg-default);
+  --dsg-border-color: var(--ds-color-border-default);
+  --dsg-selection-border-color: var(--ds-color-accent-blue-hover);
+  --dsg-active-cell-border-color: var(--ds-color-accent-blue-hover);
+  --dsg-row-hover-background-color: var(--ds-color-bg-subtle);
+  --dsg-header-active-text-color: var(--ds-color-fg-default);
+  --dsg-cell-background-color: var(--ds-color-bg-panel);
+  --dsg-header-background-color: var(--ds-color-bg-subtle);
+}
+
+.react-datasheet-grid-comparison .dsg-container {
+  font-size: 12px;
+}
+
+.react-datasheet-grid-comparison .dsg-cell,
+.react-datasheet-grid-comparison .dsg-cell-header {
+  white-space: nowrap;
+}
+
+.react-datasheet-grid-comparison .rdsg-cell-order-id {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+}
