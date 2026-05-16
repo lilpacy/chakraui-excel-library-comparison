@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Box } from "@chakra-ui/react";
+import "@glideapps/glide-data-grid/dist/index.css";
 import "handsontable/styles/handsontable.min.css";
 import "handsontable/styles/ht-theme-main.min.css";
 import "react-datasheet-grid/dist/style.css";
@@ -85,6 +86,7 @@ export default function RootLayout({
               <Footer />
             </Box>
           </Provider>
+          <div id="portal" style={{ position: "fixed", left: 0, top: 0, zIndex: 9999 }} />
         </body>
       </html>
     </ClerkProvider>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Box, Container, Text, VStack } from "@chakra-ui/react";
 import { AgGridSalesTable } from "@/app/components/tables/ag-grid";
 import { EditableSalesTable } from "@/app/components/tables/editable-sales-table";
+import { GlideDataGridSalesTable } from "@/app/components/tables/glide-data-grid";
 import { HandsontableSalesTable } from "@/app/components/tables/handsontable";
 import { ReactDataSheetGridSalesTable } from "@/app/components/tables/react-datasheet-grid";
 import { StaticSalesTable } from "@/app/components/tables/static-sales-table";
@@ -105,6 +106,19 @@ export default async function Home() {
 
           <Box {...dataGridBoxProps}>
             <ReactDataSheetGridSalesTable initialRows={salesRows} />
+          </Box>
+
+          <Box>
+            <Text as="h2" {...sectionTitleProps}>
+              Glide Data Grid Table
+            </Text>
+            <Text mt="2" {...sectionDescriptionProps}>
+              An editable Glide Data Grid instance appended for DOM comparison.
+            </Text>
+          </Box>
+
+          <Box {...dataGridBoxProps}>
+            <GlideDataGridSalesTable initialRows={salesRows} />
           </Box>
         </VStack>
       </Container>

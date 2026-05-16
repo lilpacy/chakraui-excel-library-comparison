@@ -296,3 +296,11 @@ body {
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.75rem;
 }
+
+.glide-data-grid-comparison {
+  background: var(--ds-color-bg-panel);
+}
+
+.glide-data-grid-comparison__editor {
+  display: block;
+}
