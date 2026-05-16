@@ -4,8 +4,7 @@
  *
  * IMPORTANT: Replace the placeholders below with your actual values:
  * - database_id: Create D1 databases with `npm run db:create` and `npm run db:create:preview`
- * - bucket_name: Create R2 buckets with `npm run storage:create*` commands
- * - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: Get from https://clerk.com
+ * - bucket_name: Create R2 cache buckets with `npm run storage:create:cache*` commands
  * - NEXT_PUBLIC_BASE_URL: Your production domain
  * - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: Your GA4 measurement ID (optional)
  */
@@ -44,20 +43,14 @@
 	],
 	"r2_buckets": [
 		{
-			"binding": "R2_BUCKET",
-			"bucket_name": "chakraui-excel-library-comparison-storage"
-		},
-		{
 			"binding": "NEXT_INC_CACHE_R2_BUCKET",
 			"bucket_name": "chakraui-excel-library-comparison-cache"
 		}
 	],
 	"vars": {
-		"NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "YOUR_CLERK_PUBLISHABLE_KEY_HERE",
 		"ENV_NAME": "production",
 		"NEXT_PUBLIC_BASE_URL": "https://your-domain.com",
-		"NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": "",
-		"ADMIN_EMAILS": ""
+		"NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": ""
 	},
 	// Environment-specific overrides
 	"env": {
@@ -78,18 +71,12 @@
 			],
 			"r2_buckets": [
 				{
-					"binding": "R2_BUCKET",
-					"bucket_name": "chakraui-excel-library-comparison-storage-preview"
-				},
-				{
 					"binding": "NEXT_INC_CACHE_R2_BUCKET",
 					"bucket_name": "chakraui-excel-library-comparison-cache-preview"
 				}
 			],
 			"vars": {
-				"NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "YOUR_CLERK_PUBLISHABLE_KEY_HERE",
-				"ENV_NAME": "preview",
-				"ADMIN_EMAILS": ""
+				"ENV_NAME": "preview"
 			}
 		}
 	},

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Box } from "@chakra-ui/react";
 import "@glideapps/glide-data-grid/dist/index.css";
 import "handsontable/styles/handsontable.min.css";
@@ -71,28 +70,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html
-        lang="en"
-        className={`${geistSans.variable} ${geistMono.variable}`}
-        suppressHydrationWarning
-      >
-        <body>
-          <Provider>
-            <Suspense fallback={null}>
-              <GoogleAnalytics />
-            </Suspense>
-            <Box minH="100vh" display="flex" flexDirection="column">
-              <Navigation />
-              <Box as="main" flex="1">
-                {children}
-              </Box>
-              <Footer />
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body>
+        <Provider>
+          <Suspense fallback={null}>
+            <GoogleAnalytics />
+          </Suspense>
+          <Box minH="100vh" display="flex" flexDirection="column">
+            <Navigation />
+            <Box as="main" flex="1">
+              {children}
             </Box>
-          </Provider>
-          <div id="portal" style={{ position: "fixed", left: 0, top: 0, zIndex: 9999 }} />
-        </body>
-      </html>
-    </ClerkProvider>
+            <Footer />
+          </Box>
+        </Provider>
+        <div id="portal" style={{ position: "fixed", left: 0, top: 0, zIndex: 9999 }} />
+      </body>
+    </html>
   );
 }

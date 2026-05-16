@@ -38,16 +38,12 @@
     "db:export:local": "wrangler d1 export chakraui-excel-library-comparison-db --local --output=./database-local.sql",
     "db:export:prod": "wrangler d1 export chakraui-excel-library-comparison-db --remote --output=./database-prod.sql",
     "db:export:preview": "wrangler d1 export chakraui-excel-library-comparison-db-preview --remote --env preview --output=./database-preview.sql",
-    "storage:create": "wrangler r2 bucket create chakraui-excel-library-comparison-storage",
     "storage:create:cache": "wrangler r2 bucket create chakraui-excel-library-comparison-cache",
-    "storage:create:preview": "wrangler r2 bucket create chakraui-excel-library-comparison-storage-preview",
     "storage:create:cache:preview": "wrangler r2 bucket create chakraui-excel-library-comparison-cache-preview",
     "prepare": "husky"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.899.0",
     "@chakra-ui/react": "^3.35.0",
-    "@clerk/nextjs": "^6.33.1",
     "@emotion/react": "^11.14.0",
     "@glideapps/glide-data-grid": "^6.0.3",
     "@handsontable/react-wrapper": "^17.0.1",
