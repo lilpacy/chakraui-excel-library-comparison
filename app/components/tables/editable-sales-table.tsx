@@ -13,6 +13,15 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { updateSalesOrder } from "@/app/actions/sales-orders";
+import {
+  editableInputStyles as inputStyles,
+  editablePreviewStyles as previewStyles,
+  editableRootStyles,
+  editableSelectStyles as selectFieldStyles,
+  gridCellStyles,
+  salesStatusColorPalette,
+  tableHeaderRowProps,
+} from "@/app/design-system/patterns";
 import { salesOrderStatuses } from "@/lib/db/schema";
 import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
 
@@ -34,64 +43,7 @@ const currencyFormatter = new Intl.NumberFormat("ja-JP", {
   maximumFractionDigits: 0,
 });
 
-const statusColorPalette: Record<SalesOrderStatus, string> = {
-  Delivered: "green",
-  "In Transit": "blue",
-  Pending: "orange",
-};
-
-const gridCellStyles = {
-  borderColor: "gray.200",
-  borderInlineEndWidth: "1px",
-  borderBottomWidth: "1px",
-};
-
-const inputStyles = {
-  unstyled: true,
-  bg: "transparent",
-  color: "inherit",
-  fontFamily: "inherit",
-  fontSize: "inherit",
-  lineHeight: "inherit",
-  minW: "100%",
-  w: "100%",
-  h: "auto",
-  px: "0",
-  py: "0",
-  _focusVisible: {
-    outline: "2px solid",
-    outlineColor: "blue.400",
-    outlineOffset: "2px",
-    borderRadius: "sm",
-  },
-};
-
-const selectFieldStyles = {
-  appearance: "none" as const,
-  background: "transparent",
-  border: "none",
-  borderRadius: "0",
-  color: "inherit",
-  fontFamily: "inherit",
-  fontSize: "inherit",
-  lineHeight: "inherit",
-  minWidth: "100%",
-  padding: "0 1.25rem 0 0",
-  width: "100%",
-};
-
-const editableRootStyles = {
-  activationMode: "dblclick" as const,
-  submitMode: "both" as const,
-  selectOnFocus: true,
-  unstyled: true,
-};
-
-const previewStyles = {
-  unstyled: true,
-  cursor: "text",
-  display: "block",
-};
+const statusColorPalette: Record<SalesOrderStatus, string> = salesStatusColorPalette;
 
 function parseNumber(value: string) {
   return value === "" ? 0 : Number(value);
@@ -204,7 +156,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
       <Table.ScrollArea maxW="100%">
         <Table.Root size="sm" variant="outline" striped>
           <Table.Header>
-            <Table.Row bg="gray.50">
+            <Table.Row {...tableHeaderRowProps}>
               <Table.ColumnHeader {...gridCellStyles}>Order ID</Table.ColumnHeader>
               <Table.ColumnHeader {...gridCellStyles}>Date</Table.ColumnHeader>
               <Table.ColumnHeader {...gridCellStyles}>Customer</Table.ColumnHeader>
@@ -398,7 +350,7 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
                     </select>
                     <Box
                       aria-hidden="true"
-                      color="gray.500"
+                      color="fg.subtle"
                       insetEnd="0"
                       pointerEvents="none"
                       position="absolute"
@@ -420,12 +372,12 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
         </Table.Root>
       </Table.ScrollArea>
       {saveError && (
-        <Text color="red.600" fontSize="sm" mt="3">
+        <Text color="fg.error" fontSize="sm" mt="3">
           {saveError}
         </Text>
       )}
       {!saveError && isPending && (
-        <Text color="gray.500" fontSize="sm" mt="3">
+        <Text color="fg.subtle" fontSize="sm" mt="3">
           Saving changes...
         </Text>
       )}

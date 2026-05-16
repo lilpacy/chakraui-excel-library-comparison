@@ -13,6 +13,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { helperTextProps, surfaceBoxProps } from "@/app/design-system/patterns";
 
 type Todo = {
   id: string;
@@ -46,7 +47,7 @@ export function TodoList({ todos }: { todos: Todo[] }) {
   if (todos.length === 0) {
     return (
       <Box py="12" textAlign="center">
-        <Text fontSize="lg" color="gray.500">
+        <Text fontSize="lg" color="fg.subtle">
           No todos yet. Create your first todo above!
         </Text>
       </Box>
@@ -58,10 +59,8 @@ export function TodoList({ todos }: { todos: Todo[] }) {
       {todos.map((todo) => (
         <Box
           key={todo.id}
-          borderWidth="1px"
-          rounded="xl"
+          {...surfaceBoxProps}
           p="4"
-          bg="whiteAlpha.900"
           opacity={deletingId === todo.id ? 0.5 : 1}
           transition="opacity 0.2s ease"
         >
@@ -83,20 +82,20 @@ export function TodoList({ todos }: { todos: Todo[] }) {
                     as="h3"
                     fontSize="lg"
                     fontWeight="semibold"
-                    color={todo.completed ? "gray.500" : "gray.900"}
+                    color={todo.completed ? "fg.subtle" : "fg"}
                     textDecoration={todo.completed ? "line-through" : "none"}
-                    _hover={{ color: "blue.600" }}
+                    _hover={{ color: "fg.brand" }}
                   >
                     {todo.title}
                   </Text>
                 </NextLink>
               </ChakraLink>
               {todo.description && (
-                <Text mt="1" color="gray.600">
+                <Text mt="1" color="fg.muted">
                   {todo.description}
                 </Text>
               )}
-              <Text mt="2" fontSize="sm" color="gray.400">
+              <Text mt="2" {...helperTextProps}>
                 Created {format(new Date(todo.createdAt), "MMM d, yyyy")}
               </Text>
             </Box>

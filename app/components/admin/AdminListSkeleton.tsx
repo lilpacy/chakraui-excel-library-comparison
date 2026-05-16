@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Container, HStack, Skeleton, VStack } from "@chakra-ui/react";
+import { surfaceBoxProps } from "@/app/design-system/patterns";
 
 export default function AdminListSkeleton() {
   return (
@@ -8,7 +9,7 @@ export default function AdminListSkeleton() {
       <Container maxW="6xl" px={{ base: 4, md: 6 }}>
         <VStack align="stretch" gap="6">
           <Skeleton height="10" width="36" rounded="md" />
-          <Box bg="whiteAlpha.900" borderWidth="1px" rounded="xl" p="6">
+          <Box {...surfaceBoxProps} p="6">
             <VStack align="stretch" gap="4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <HStack key={i} gap="4">

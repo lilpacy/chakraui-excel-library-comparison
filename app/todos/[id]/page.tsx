@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { Box, Container, Text } from "@chakra-ui/react";
 import { redirect } from "next/navigation";
 import { getTodoById } from "@/app/actions/todos";
+import { pageTitleProps, sectionDescriptionProps } from "@/app/design-system/patterns";
 import { EditTodoForm } from "./EditTodoForm";
 
 export const metadata = {
@@ -27,10 +28,10 @@ export default async function EditTodoPage({
     return (
       <Container maxW="2xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 10 }}>
         <Box mb="8">
-          <Text as="h1" fontSize="3xl" fontWeight="bold" mb="2">
+          <Text as="h1" mb="2" {...pageTitleProps}>
             Edit Todo
           </Text>
-          <Text color="gray.600">Update your todo information</Text>
+          <Text {...sectionDescriptionProps}>Update your todo information</Text>
         </Box>
 
         <EditTodoForm todo={todo} />
@@ -40,10 +41,10 @@ export default async function EditTodoPage({
     return (
       <Container maxW="2xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 10 }}>
         <Box textAlign="center">
-          <Text as="h1" fontSize="2xl" fontWeight="bold" color="red.600" mb="4">
+          <Text as="h1" fontSize="2xl" fontWeight="bold" color="fg.error" mb="4">
             Error
           </Text>
-          <Text color="gray.600">
+          <Text {...sectionDescriptionProps}>
             {error instanceof Error ? error.message : "Todo not found"}
           </Text>
         </Box>

@@ -1,4 +1,9 @@
 import { Badge, Table } from "@chakra-ui/react";
+import {
+  gridCellStyles,
+  salesStatusColorPalette,
+  tableHeaderRowProps,
+} from "@/app/design-system/patterns";
 import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
 
 type StaticSalesTableProps = {
@@ -11,24 +16,14 @@ const currencyFormatter = new Intl.NumberFormat("ja-JP", {
   maximumFractionDigits: 0,
 });
 
-const statusColorPalette: Record<SalesOrderStatus, string> = {
-  Delivered: "green",
-  "In Transit": "blue",
-  Pending: "orange",
-};
-
-const gridCellStyles = {
-  borderColor: "gray.200",
-  borderInlineEndWidth: "1px",
-  borderBottomWidth: "1px",
-};
+const statusColorPalette: Record<SalesOrderStatus, string> = salesStatusColorPalette;
 
 export function StaticSalesTable({ rows }: StaticSalesTableProps) {
   return (
     <Table.ScrollArea maxW="100%">
       <Table.Root size="sm" variant="outline" striped>
         <Table.Header>
-          <Table.Row bg="gray.50">
+          <Table.Row {...tableHeaderRowProps}>
             <Table.ColumnHeader {...gridCellStyles}>Order ID</Table.ColumnHeader>
             <Table.ColumnHeader {...gridCellStyles}>Date</Table.ColumnHeader>
             <Table.ColumnHeader {...gridCellStyles}>Customer</Table.ColumnHeader>

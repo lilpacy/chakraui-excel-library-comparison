@@ -1,21 +1,19 @@
 @use "./_variables.scss" as *;
-@use "./_tokens.scss" as *;
 
 // Link styles for content areas only
 .prose a,
 .content a {
-  color: rgb(29 78 216);
+  color: var(--ds-color-link);
 }
 
 .prose a:hover,
 .content a:hover {
-  border-bottom: 2px solid rgb(29 78 216);
+  border-bottom: 2px solid var(--ds-color-link-hover);
 }
 
 html,
 body {
   min-height: 100%;
-  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAAAsSAAALEgHS3X78AAAAG3RFWHRTb2Z0d2FyZQBDZWxzeXMgU3R1ZGlvIFRvb2zBp+F8AAAAaklEQVRYw+3SOwqAUAxE0YyCP5773+cDwUbGRkTQxkZT3FSBNIeZaF2qI9FoXar7oUQ0SgSa5tvBjpASgdIkZG8htcfu0Mcx5U3or595BHVjOau51kRlgAABAgQIECBAgAABAgQIEKC3swOGHZ93/K3/jwAAAABJRU5ErkJggg==");
 }
 
 body {
@@ -34,11 +32,4 @@ a {
 
 body {
   -webkit-font-smoothing: antialiased;
-}
-
-.handsontable-comparison .handsontable td,
-.handsontable-comparison .handsontable th {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }

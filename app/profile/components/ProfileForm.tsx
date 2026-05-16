@@ -12,6 +12,12 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import {
+  designSystemClassNames,
+  helperTextProps,
+  labelTextProps,
+  sectionTitleProps,
+} from "@/app/design-system/patterns";
 
 type Profile = {
   userId: string;
@@ -99,20 +105,20 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   return (
     <VStack gap="6" align="stretch">
       <Box>
-        <Text as="h2" fontSize="xl" fontWeight="semibold" mb="4">
+        <Text as="h2" mb="4" {...sectionTitleProps}>
           Profile Image
         </Text>
 
         {profile?.profileImageUrl && !previewUrl && (
           <Box mb="4">
-            <Text fontSize="sm" color="gray.600" mb="2">
+            <Text {...labelTextProps}>
               Current image:
             </Text>
             <Box
               boxSize="32"
               rounded="full"
               overflow="hidden"
-              bg="gray.100"
+              bg="bg.subtle"
               position="relative"
             >
               <Image
@@ -122,7 +128,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
                 style={{ objectFit: "cover" }}
               />
             </Box>
-            <Text mt="2" fontSize="xs" color="gray.500">
+            <Text mt="2" {...helperTextProps}>
               Image stored in R2: {profile.profileImageUrl}
             </Text>
           </Box>
@@ -130,14 +136,14 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
         {previewUrl && (
           <Box mb="4">
-            <Text fontSize="sm" color="gray.600" mb="2">
+            <Text {...labelTextProps}>
               Preview:
             </Text>
             <Box
               boxSize="32"
               rounded="full"
               overflow="hidden"
-              bg="gray.100"
+              bg="bg.subtle"
               position="relative"
             >
               <Image
@@ -152,92 +158,68 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
         <form onSubmit={handleSubmit}>
           <VStack gap="4" align="stretch">
-          <Box>
-            <label htmlFor="image">
-              <Text
-                display="block"
-                fontSize="sm"
-                fontWeight="medium"
-                color="gray.700"
-                mb="2"
-              >
-                Upload new image
-              </Text>
-            </label>
-            <Input
-              ref={fileInputRef}
-              type="file"
-              id="image"
-              name="image"
-              accept="image/*"
-              onChange={handleFileChange}
-              disabled={isPending}
-              p="1.5"
-            />
-            <Text fontSize="xs" color="gray.500" mt="1">
-              Max file size: 5MB. Supported formats: JPG, PNG, GIF
-            </Text>
-          </Box>
-
-          {error && (
-            <Box
-              p="3"
-              bg="red.50"
-              borderWidth="1px"
-              borderColor="red.200"
-              rounded="md"
-              color="red.700"
-              fontSize="sm"
-            >
-              {error}
-            </Box>
-          )}
-
-          {success && (
-            <Box
-              p="3"
-              bg="green.50"
-              borderWidth="1px"
-              borderColor="green.200"
-              rounded="md"
-              color="green.700"
-              fontSize="sm"
-            >
-              {success}
-            </Box>
-          )}
-
-          <HStack gap="3" flexWrap="wrap">
-            <Button
-              type="submit"
-              disabled={isPending || !previewUrl}
-              colorPalette="blue"
-            >
-              {isPending ? "Uploading..." : "Upload Image"}
-            </Button>
-
-            {profile?.profileImageUrl && (
-              <Button
-                type="button"
-                onClick={handleDelete}
+            <Box>
+              <label htmlFor="image">
+                <Text {...labelTextProps}>Upload new image</Text>
+              </label>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                id="image"
+                name="image"
+                accept="image/*"
+                onChange={handleFileChange}
                 disabled={isPending}
-                variant="outline"
-                colorPalette="red"
-              >
-                Delete Current Image
-              </Button>
+                p="1.5"
+              />
+              <Text mt="1" {...helperTextProps}>
+                Max file size: 5MB. Supported formats: JPG, PNG, GIF
+              </Text>
+            </Box>
+
+            {error && (
+              <Box className={designSystemClassNames.statusError}>
+                {error}
+              </Box>
             )}
-          </HStack>
+
+            {success && (
+              <Box className={designSystemClassNames.statusSuccess}>
+                {success}
+              </Box>
+            )}
+
+            <HStack gap="3" flexWrap="wrap">
+              <Button
+                type="submit"
+                disabled={isPending || !previewUrl}
+                colorPalette="brand"
+              >
+                {isPending ? "Uploading..." : "Upload Image"}
+              </Button>
+
+              {profile?.profileImageUrl && (
+                <Button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isPending}
+                  variant="outline"
+                  colorPalette="red"
+                >
+                  Delete Current Image
+                </Button>
+              )}
+            </HStack>
           </VStack>
         </form>
       </Box>
 
       <Box>
         <Separator mb="6" />
-        <Text as="h3" fontSize="sm" fontWeight="medium" color="gray.700" mb="2">
+        <Text as="h3" {...labelTextProps}>
           Storage Information
         </Text>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Your profile images are securely stored in Cloudflare R2 object
           storage. Images are automatically optimized and served globally
           through Cloudflare&apos;s CDN.

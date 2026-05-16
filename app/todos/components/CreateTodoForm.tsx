@@ -3,6 +3,11 @@
 import { useState, useTransition } from "react";
 import { Box, Button, Input, Text, Textarea, VStack } from "@chakra-ui/react";
 import { createTodo } from "@/app/actions/todos";
+import {
+  designSystemClassNames,
+  labelTextProps,
+  sectionTitleProps,
+} from "@/app/design-system/patterns";
 import { useRouter } from "next/navigation";
 
 export function CreateTodoForm() {
@@ -42,24 +47,16 @@ export function CreateTodoForm() {
       as="form"
       onSubmit={handleSubmit}
       borderWidth="1px"
-      rounded="xl"
+      rounded="lg"
       p={{ base: 4, md: 5 }}
-      bg="blackAlpha.50"
+      className={designSystemClassNames.surfaceMuted}
     >
-      <Text as="h2" fontSize="xl" fontWeight="semibold" mb="4">
+      <Text as="h2" mb="4" {...sectionTitleProps}>
         Create New Todo
       </Text>
 
       {error && (
-        <Box
-          mb="4"
-          p="3"
-          bg="red.50"
-          borderWidth="1px"
-          borderColor="red.200"
-          color="red.700"
-          rounded="md"
-        >
+        <Box mb="4" className={designSystemClassNames.statusError}>
           {error}
         </Box>
       )}
@@ -67,7 +64,7 @@ export function CreateTodoForm() {
       <VStack gap="4" align="stretch">
         <Box>
           <label htmlFor="title">
-            <Text display="block" fontSize="sm" fontWeight="medium" mb="1">
+            <Text {...labelTextProps}>
               Title
             </Text>
           </label>
@@ -84,7 +81,7 @@ export function CreateTodoForm() {
 
         <Box>
           <label htmlFor="description">
-            <Text display="block" fontSize="sm" fontWeight="medium" mb="1">
+            <Text {...labelTextProps}>
               Description (optional)
             </Text>
           </label>
@@ -102,7 +99,7 @@ export function CreateTodoForm() {
         <Button
           type="submit"
           disabled={isPending || !title.trim()}
-          colorPalette="blue"
+          colorPalette="brand"
         >
           {isPending ? "Creating..." : "Create Todo"}
         </Button>

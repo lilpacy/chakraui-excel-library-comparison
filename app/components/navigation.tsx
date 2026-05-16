@@ -12,6 +12,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { designSystemClassNames } from "@/app/design-system/patterns";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -38,15 +39,15 @@ export default function Navigation() {
   };
 
   return (
-    <Box as="nav" bg="whiteAlpha.900" borderBottomWidth="1px" boxShadow="sm">
+    <Box as="nav" className={designSystemClassNames.surface} borderBottomWidth="1px" borderBottomColor="border">
       <Container maxW="6xl" px={{ base: 4, md: 6 }}>
         <HStack minH="16" justify="space-between">
           <ChakraLink
             asChild
-            color="gray.900"
+            color="fg.brand"
             fontSize="xl"
             fontWeight="bold"
-            _hover={{ color: "gray.700", textDecoration: "none" }}
+            _hover={{ color: "fg", textDecoration: "none" }}
           >
             <NextLink href="/">CF Next Boilerplate</NextLink>
           </ChakraLink>
@@ -61,13 +62,13 @@ export default function Navigation() {
                   asChild
                   pb="1"
                   borderBottomWidth="2px"
-                  borderColor={active ? "blue.600" : "transparent"}
-                  color={active ? "blue.600" : "gray.700"}
+                  borderColor={active ? "brand.solid" : "transparent"}
+                  color={active ? "fg.brand" : "fg.muted"}
                   fontWeight={active ? "semibold" : "medium"}
                   transition="colors 0.2s ease, border-color 0.2s ease"
                   _hover={{
-                    color: "blue.600",
-                    borderColor: active ? "blue.600" : "blue.300",
+                    color: "fg.brand",
+                    borderColor: active ? "brand.solid" : "brand.muted",
                     textDecoration: "none",
                   }}
                 >
@@ -80,13 +81,14 @@ export default function Navigation() {
             ) : (
               <ChakraLink
                 asChild
-                bg="blue.600"
-                color="white"
+                colorPalette="brand"
+                bg="brand.solid"
+                color="brand.contrast"
                 px="4"
                 py="2"
                 rounded="md"
                 fontWeight="medium"
-                _hover={{ bg: "blue.700", textDecoration: "none" }}
+                _hover={{ bg: "brand.solid", opacity: "0.92", textDecoration: "none" }}
               >
                 <NextLink href="/sign-in">Sign In</NextLink>
               </ChakraLink>
@@ -97,7 +99,7 @@ export default function Navigation() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             display={{ base: "inline-flex", md: "none" }}
             variant="outline"
-            colorPalette="blue"
+            colorPalette="brand"
             aria-label="Toggle menu"
           >
             {isMenuOpen ? "Close" : "Menu"}
@@ -122,12 +124,12 @@ export default function Navigation() {
                   px="3"
                   py="2"
                   rounded="md"
-                  bg={active ? "blue.50" : "transparent"}
-                  color={active ? "blue.600" : "gray.700"}
+                  bg={active ? "brand.subtle" : "transparent"}
+                  color={active ? "fg.brand" : "fg.muted"}
                   fontWeight={active ? "semibold" : "medium"}
                   _hover={{
-                    bg: active ? "blue.50" : "gray.50",
-                    color: "blue.600",
+                    bg: active ? "brand.subtle" : "bg.subtle",
+                    color: "fg.brand",
                     textDecoration: "none",
                   }}
                 >
@@ -144,13 +146,13 @@ export default function Navigation() {
                 <ChakraLink
                   asChild
                   display="inline-flex"
-                  bg="blue.600"
-                  color="white"
+                  bg="brand.solid"
+                  color="brand.contrast"
                   px="4"
                   py="2"
                   rounded="md"
                   fontWeight="medium"
-                  _hover={{ bg: "blue.700", textDecoration: "none" }}
+                  _hover={{ bg: "brand.solid", opacity: "0.92", textDecoration: "none" }}
                 >
                   <NextLink href="/sign-in" onClick={() => setIsMenuOpen(false)}>
                     Sign In

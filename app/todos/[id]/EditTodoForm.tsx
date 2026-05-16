@@ -8,10 +8,16 @@ import {
   Checkbox,
   HStack,
   Input,
+  Text,
   Textarea,
   VStack,
 } from "@chakra-ui/react";
 import { updateTodo } from "@/app/actions/todos";
+import {
+  designSystemClassNames,
+  labelTextProps,
+  surfaceBoxProps,
+} from "@/app/design-system/patterns";
 
 type Todo = {
   id: string;
@@ -57,17 +63,9 @@ export function EditTodoForm({ todo }: { todo: Todo }) {
   };
 
   return (
-    <Box as="form" onSubmit={handleSubmit} borderWidth="1px" rounded="xl" p={{ base: 5, md: 6 }} bg="whiteAlpha.900">
+    <Box as="form" onSubmit={handleSubmit} {...surfaceBoxProps} p={{ base: 5, md: 6 }}>
       {error && (
-        <Box
-          mb="4"
-          p="3"
-          bg="red.50"
-          borderWidth="1px"
-          borderColor="red.200"
-          color="red.700"
-          rounded="md"
-        >
+        <Box mb="4" className={designSystemClassNames.statusError}>
           {error}
         </Box>
       )}
@@ -75,9 +73,9 @@ export function EditTodoForm({ todo }: { todo: Todo }) {
       <VStack gap="4" align="stretch">
         <Box>
           <label htmlFor="title">
-            <Box display="block" fontSize="sm" fontWeight="medium" mb="1">
+            <Text {...labelTextProps}>
               Title
-            </Box>
+            </Text>
           </label>
           <Input
             type="text"
@@ -92,9 +90,9 @@ export function EditTodoForm({ todo }: { todo: Todo }) {
 
         <Box>
           <label htmlFor="description">
-            <Box display="block" fontSize="sm" fontWeight="medium" mb="1">
+            <Text {...labelTextProps}>
               Description (optional)
-            </Box>
+            </Text>
           </label>
           <Textarea
             id="description"
@@ -108,22 +106,22 @@ export function EditTodoForm({ todo }: { todo: Todo }) {
         </Box>
 
         <Checkbox.Root
-            id="completed"
-            checked={completed}
-            disabled={isPending}
-            onCheckedChange={(details) => setCompleted(details.checked === true)}
-          >
-            <Checkbox.HiddenInput />
-            <Checkbox.Control />
-            <Checkbox.Label>Mark as completed</Checkbox.Label>
-          </Checkbox.Root>
+          id="completed"
+          checked={completed}
+          disabled={isPending}
+          onCheckedChange={(details) => setCompleted(details.checked === true)}
+        >
+          <Checkbox.HiddenInput />
+          <Checkbox.Control />
+          <Checkbox.Label>Mark as completed</Checkbox.Label>
+        </Checkbox.Root>
 
         <HStack gap="3" pt="4" align="stretch">
           <Button
             type="submit"
             disabled={isPending || !title.trim()}
             flex="1"
-            colorPalette="blue"
+            colorPalette="brand"
           >
             {isPending ? "Saving..." : "Save Changes"}
           </Button>

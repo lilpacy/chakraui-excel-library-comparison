@@ -7,6 +7,7 @@ import type { CellChange } from "handsontable/common";
 import type { ColumnSettings } from "handsontable/settings";
 import { registerAllModules } from "handsontable/registry";
 import { updateSalesOrder } from "@/app/actions/sales-orders";
+import { designSystemClassNames } from "@/app/design-system/patterns";
 import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
 import { salesOrderStatuses } from "@/lib/db/schema";
 
@@ -185,7 +186,7 @@ export function HandsontableSalesTableClient({
   }
 
   return (
-    <Box>
+    <Box className={designSystemClassNames.dataGrid}>
       <HotTable
         ref={hotRef}
         className="handsontable-comparison"
@@ -202,7 +203,7 @@ export function HandsontableSalesTableClient({
         afterChange={handleAfterChange}
       />
       {(isPending || saveError) && (
-        <Text px="4" py="3" color={saveError ? "red.600" : "gray.600"} fontSize="sm">
+        <Text px="4" py="3" color={saveError ? "fg.error" : "fg.muted"} fontSize="sm">
           {saveError ?? "Saving changes..."}
         </Text>
       )}
