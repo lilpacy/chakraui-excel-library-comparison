@@ -35,3 +35,10 @@ a {
 body {
   -webkit-font-smoothing: antialiased;
 }
+
+.handsontable-comparison .handsontable td,
+.handsontable-comparison .handsontable th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

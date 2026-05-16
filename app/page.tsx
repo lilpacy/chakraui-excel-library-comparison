@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Box, Container, Text, VStack } from "@chakra-ui/react";
 import { EditableSalesTable } from "@/app/components/tables/editable-sales-table";
+import { HandsontableSalesTable } from "@/app/components/tables/handsontable-sales-table";
 import { StaticSalesTable } from "@/app/components/tables/static-sales-table";
 import { getSalesOrders } from "@/lib/db/sales-orders";
 
@@ -69,6 +70,25 @@ export default async function Home() {
             overflow="hidden"
           >
             <EditableSalesTable initialRows={salesRows} />
+          </Box>
+
+          <Box>
+            <Text as="h2" fontSize={{ base: "xl", md: "2xl" }} fontWeight="semibold">
+              Handsontable Table
+            </Text>
+            <Text mt="2" color="gray.600">
+              A spreadsheet-style editable grid powered by Handsontable for DOM comparison.
+            </Text>
+          </Box>
+
+          <Box
+            borderWidth="1px"
+            rounded="xl"
+            bg="whiteAlpha.900"
+            boxShadow="sm"
+            overflow="hidden"
+          >
+            <HandsontableSalesTable initialRows={salesRows} />
           </Box>
         </VStack>
       </Container>

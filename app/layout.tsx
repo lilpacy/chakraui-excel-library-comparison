@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Box } from "@chakra-ui/react";
+import "handsontable/styles/handsontable.min.css";
+import "handsontable/styles/ht-theme-main.min.css";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import { Provider } from "./components/ui/provider";
 import Navigation from "./components/navigation";

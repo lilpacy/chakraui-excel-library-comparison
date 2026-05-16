@@ -1,0 +1,211 @@
+"use client";
+
+import { useEffect, useRef, useState, useTransition } from "react";
+import { Box, Text } from "@chakra-ui/react";
+import { HotTable, type HotTableRef } from "@handsontable/react-wrapper";
+import type { CellChange } from "handsontable/common";
+import type { ColumnSettings } from "handsontable/settings";
+import { registerAllModules } from "handsontable/registry";
+import { updateSalesOrder } from "@/app/actions/sales-orders";
+import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
+import { salesOrderStatuses } from "@/lib/db/schema";
+
+registerAllModules();
+
+type HandsontableSalesTableClientProps = {
+  initialRows: SalesOrderRow[];
+};
+
+type ColumnKey = keyof SalesOrderRow;
+
+const columnKeys: ColumnKey[] = [
+  "orderId",
+  "orderDate",
+  "customer",
+  "region",
+  "rep",
+  "category",
+  "product",
+  "quantity",
+  "unitPrice",
+  "status",
+];
+
+const colHeaders = [
+  "Order ID",
+  "Date",
+  "Customer",
+  "Region",
+  "Sales Rep",
+  "Category",
+  "Product",
+  "Qty",
+  "Unit Price",
+  "Status",
+];
+
+const columns: ColumnSettings[] = [
+  { data: "orderId", type: "text", width: 118 },
+  { data: "orderDate", type: "text", width: 118 },
+  { data: "customer", type: "text", width: 220 },
+  { data: "region", type: "text", width: 140 },
+  { data: "rep", type: "text", width: 160 },
+  { data: "category", type: "text", width: 150 },
+  { data: "product", type: "text", width: 220 },
+  {
+    data: "quantity",
+    type: "numeric",
+    width: 90,
+    locale: "ja-JP",
+    numericFormat: { maximumFractionDigits: 0, useGrouping: true },
+  },
+  {
+    data: "unitPrice",
+    type: "numeric",
+    width: 120,
+    locale: "ja-JP",
+    numericFormat: {
+      style: "currency",
+      currency: "JPY",
+      maximumFractionDigits: 0,
+    },
+  },
+  {
+    data: "status",
+    type: "dropdown",
+    width: 132,
+    source: [...salesOrderStatuses],
+    strict: true,
+    allowInvalid: false,
+  },
+];
+
+function cloneRow(row: SalesOrderRow): SalesOrderRow {
+  return { ...row };
+}
+
+function cloneRows(rows: SalesOrderRow[]): SalesOrderRow[] {
+  return rows.map(cloneRow);
+}
+
+function isColumnKey(value: unknown): value is ColumnKey {
+  return typeof value === "string" && columnKeys.includes(value as ColumnKey);
+}
+
+function coerceNumber(value: unknown) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? Math.trunc(numericValue) : 0;
+}
+
+function coerceStatus(value: unknown): SalesOrderStatus {
+  return salesOrderStatuses.includes(value as SalesOrderStatus)
+    ? (value as SalesOrderStatus)
+    : "Pending";
+}
+
+function coerceRow(value: Partial<SalesOrderRow> & Record<string, unknown>): SalesOrderRow {
+  return {
+    orderId: String(value.orderId ?? ""),
+    orderDate: String(value.orderDate ?? ""),
+    customer: String(value.customer ?? ""),
+    region: String(value.region ?? ""),
+    rep: String(value.rep ?? ""),
+    category: String(value.category ?? ""),
+    product: String(value.product ?? ""),
+    quantity: coerceNumber(value.quantity),
+    unitPrice: coerceNumber(value.unitPrice),
+    status: coerceStatus(value.status),
+  };
+}
+
+function rollbackChanges(
+  rowIndex: number,
+  row: SalesOrderRow,
+): Array<[number, ColumnKey, SalesOrderRow[ColumnKey]]> {
+  return columnKeys.map((key) => [rowIndex, key, row[key]]);
+}
+
+export function HandsontableSalesTableClient({
+  initialRows,
+}: HandsontableSalesTableClientProps) {
+  const hotRef = useRef<HotTableRef | null>(null);
+  const rowsRef = useRef(cloneRows(initialRows));
+  const [isPending, startTransition] = useTransition();
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const nextRows = cloneRows(initialRows);
+    rowsRef.current = nextRows;
+    hotRef.current?.hotInstance?.loadData(nextRows, "external");
+  }, [initialRows]);
+
+  function handleAfterChange(changes: CellChange[] | null, source: string) {
+    if (
+      !changes ||
+      !hotRef.current?.hotInstance ||
+      source === "loadData" ||
+      source === "external" ||
+      source === "rollback"
+    ) {
+      return;
+    }
+
+    const hotInstance = hotRef.current.hotInstance;
+    const changedRows = new Set<number>();
+
+    for (const [rowIndex, prop, oldValue, newValue] of changes) {
+      if (oldValue !== newValue && isColumnKey(prop)) {
+        changedRows.add(rowIndex);
+      }
+    }
+
+    if (changedRows.size === 0) {
+      return;
+    }
+
+    setSaveError(null);
+
+    startTransition(async () => {
+      for (const rowIndex of changedRows) {
+        const previousRow = cloneRow(rowsRef.current[rowIndex]);
+        const nextRow = coerceRow(
+          hotInstance.getSourceDataAtRow(rowIndex) as Partial<SalesOrderRow> &
+            Record<string, unknown>,
+        );
+
+        try {
+          await updateSalesOrder(previousRow.orderId, nextRow);
+          rowsRef.current[rowIndex] = cloneRow(nextRow);
+        } catch (error) {
+          hotInstance.setDataAtRowProp(rollbackChanges(rowIndex, previousRow), "rollback");
+          setSaveError(error instanceof Error ? error.message : "Failed to save sales order");
+        }
+      }
+    });
+  }
+
+  return (
+    <Box>
+      <HotTable
+        ref={hotRef}
+        className="handsontable-comparison"
+        data={rowsRef.current}
+        columns={columns}
+        colHeaders={colHeaders}
+        rowHeaders={false}
+        width="100%"
+        height="auto"
+        stretchH="none"
+        readOnly={isPending}
+        licenseKey="non-commercial-and-evaluation"
+        themeName="ht-theme-main"
+        afterChange={handleAfterChange}
+      />
+      {(isPending || saveError) && (
+        <Text px="4" py="3" color={saveError ? "red.600" : "gray.600"} fontSize="sm">
+          {saveError ?? "Saving changes..."}
+        </Text>
+      )}
+    </Box>
+  );
+}
