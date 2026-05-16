@@ -195,6 +195,16 @@ function cloneRows(rows: SalesOrderRow[]): SalesOrderRow[] {
   return rows.map(cloneRow);
 }
 
+function rowsEqual(left: SalesOrderRow[], right: SalesOrderRow[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((row, index) =>
+    columnKeys.every((key) => row[key] === right[index]?.[key]),
+  );
+}
+
 function isColumnKey(value: unknown): value is ColumnKey {
   return typeof value === "string" && columnKeys.includes(value as ColumnKey);
 }
@@ -271,9 +281,14 @@ export function HandsontableSalesTableClient({
 
   useEffect(() => {
     const nextRows = cloneRows(initialRows);
-    rowsRef.current = nextRows;
     const hotInstance = hotRef.current?.hotInstance;
 
+    if (rowsEqual(nextRows, rowsRef.current)) {
+      syncUndoRedoState();
+      return;
+    }
+
+    rowsRef.current = nextRows;
     hotInstance?.loadData(nextRows, "external");
     getUndoRedoPlugin(hotRef)?.clear();
     syncUndoRedoState();
