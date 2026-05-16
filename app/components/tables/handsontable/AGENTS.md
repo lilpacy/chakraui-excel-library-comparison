@@ -1,3 +1,7 @@
+# app/components/tables/handsontable
+
+このフォルダ配下を変更する際には、以下のうち関係ありそうなdocsを`npx curl.md {url}`を使って読み込んでから、最新の情報をもとに実装を行うこと。  
+
 https://handsontable.com/docs/javascript-data-grid
 https://handsontable.com/docs/javascript-data-grid/installation
 https://handsontable.com/docs/javascript-data-grid/api
