@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input, NativeSelect, Table } from "@chakra-ui/react";
+import { Box, Input, Table } from "@chakra-ui/react";
 import { salesOrderStatuses } from "@/lib/db/schema";
 
 type SalesOrderStatus = (typeof salesOrderStatuses)[number];
@@ -50,23 +50,17 @@ const inputStyles = {
 };
 
 const selectFieldStyles = {
-  unstyled: true,
-  bg: "transparent",
+  appearance: "none" as const,
+  background: "transparent",
+  border: "none",
+  borderRadius: "0",
   color: "inherit",
   fontFamily: "inherit",
   fontSize: "inherit",
   lineHeight: "inherit",
-  minW: "0",
-  w: "full",
-  h: "auto",
-  px: "0",
-  py: "0",
-  _focusVisible: {
-    outline: "2px solid",
-    outlineColor: "blue.400",
-    outlineOffset: "2px",
-    borderRadius: "sm",
-  },
+  minWidth: 0,
+  padding: "0 1.25rem 0 0",
+  width: "100%",
 };
 
 export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
@@ -180,12 +174,16 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
                 />
               </Table.Cell>
               <Table.Cell {...gridCellStyles}>
-                <NativeSelect.Root unstyled>
-                  <NativeSelect.Field
-                    {...selectFieldStyles}
+                <Box position="relative">
+                  <select
+                    style={selectFieldStyles}
                     value={row.status}
                     onChange={(event) =>
-                      updateRow(row.orderId, "status", event.target.value as SalesOrderStatus)
+                      updateRow(
+                        row.orderId,
+                        "status",
+                        event.target.value as SalesOrderStatus,
+                      )
                     }
                   >
                     {salesOrderStatuses.map((status) => (
@@ -193,9 +191,19 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
                         {status}
                       </option>
                     ))}
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
+                  </select>
+                  <Box
+                    aria-hidden="true"
+                    color="gray.500"
+                    insetEnd="0"
+                    pointerEvents="none"
+                    position="absolute"
+                    top="50%"
+                    transform="translateY(-50%)"
+                  >
+                    ▾
+                  </Box>
+                </Box>
               </Table.Cell>
             </Table.Row>
           ))}
