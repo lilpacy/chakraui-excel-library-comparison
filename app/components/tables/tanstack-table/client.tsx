@@ -10,6 +10,7 @@ import {
   EditableRoot,
   HStack,
   Input,
+  Popover,
   Table,
   Text,
 } from "@chakra-ui/react";
@@ -119,6 +120,24 @@ function toSalesOrderRow(row: TanStackSalesRow): SalesOrderRow {
 
 function getTableMeta(table: TanStackTable<TanStackSalesRow>) {
   return table.options.meta as TanStackSalesTableMeta;
+}
+
+function FilterIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      style={{ color: active ? "var(--chakra-colors-blue-600)" : "var(--chakra-colors-fg-subtle)" }}
+      fill="none"
+      height="14"
+      viewBox="0 0 16 16"
+      width="14"
+    >
+      <path
+        d="M2.5 3.5h11l-4.25 4.75v3.25l-2.5 1V8.25L2.5 3.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
 }
 
 function createTextColumn(
@@ -482,58 +501,84 @@ export function TanStackSalesTableClient({
                         key={header.id}
                         {...gridCellStyles}
                         {...getSalesTableHeaderCellProps(meta.headerIndex)}
-                        cursor={header.column.getCanSort() ? "pointer" : undefined}
                         textAlign={meta.textAlign}
                         userSelect="none"
-                        onClick={header.column.getToggleSortingHandler()}
                       >
                         <HStack gap="2" justify={meta.textAlign === "end" ? "flex-end" : "flex-start"}>
-                          <Text>{flexRender(header.column.columnDef.header, header.getContext())}</Text>
-                          <Text color={hasFilterValue ? "blue.600" : "fg.subtle"} fontSize="xs">
-                            □
-                          </Text>
-                          <Text color="fg.subtle" fontSize="xs" minW="3">
-                            {sortState === "asc" ? "▲" : sortState === "desc" ? "▼" : ""}
-                          </Text>
+                          <button
+                            type="button"
+                            style={{
+                              alignItems: "center",
+                              background: "transparent",
+                              border: "none",
+                              cursor: header.column.getCanSort() ? "pointer" : "default",
+                              display: "inline-flex",
+                              gap: "0.5rem",
+                              padding: 0,
+                            }}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            <Text>{flexRender(header.column.columnDef.header, header.getContext())}</Text>
+                            <Text color="fg.subtle" fontSize="xs" minW="3">
+                              {sortState === "asc" ? "▲" : sortState === "desc" ? "▼" : ""}
+                            </Text>
+                          </button>
+                          <Popover.Root positioning={{ placement: "bottom-start" }}>
+                            <Popover.Trigger asChild>
+                              <button
+                                type="button"
+                                aria-label={`Filter ${String(header.column.columnDef.header)}`}
+                                style={{
+                                  alignItems: "center",
+                                  background: "transparent",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  justifyContent: "center",
+                                  padding: 0,
+                                }}
+                              >
+                                <FilterIcon active={hasFilterValue} />
+                              </button>
+                            </Popover.Trigger>
+                            <Popover.Positioner>
+                              <Popover.Content minW="56" p="3">
+                                <Popover.Body p="0">
+                                  <Text color="fg.muted" fontSize="xs" mb="2">
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                  </Text>
+                                  {meta.filter === "status" ? (
+                                    <select
+                                      style={selectFieldStyles}
+                                      value={String(filterValue ?? "")}
+                                      onChange={(event) =>
+                                        header.column.setFilterValue(event.target.value || undefined)
+                                      }
+                                    >
+                                      <option value="">All</option>
+                                      {salesOrderStatuses.map((status) => (
+                                        <option key={status} value={status}>
+                                          {status}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <Input
+                                      size="sm"
+                                      type={meta.filter === "number" ? "number" : "text"}
+                                      value={String(filterValue ?? "")}
+                                      placeholder={meta.filter === "number" ? "Equals..." : "Contains..."}
+                                      onChange={(event) =>
+                                        header.column.setFilterValue(event.target.value || undefined)
+                                      }
+                                    />
+                                  )}
+                                </Popover.Body>
+                              </Popover.Content>
+                            </Popover.Positioner>
+                          </Popover.Root>
                         </HStack>
                       </Table.ColumnHeader>
-                    );
-                  })}
-                </Table.Row>
-                <Table.Row key={`${headerGroup.id}-filters`} bg="bg">
-                  {headerGroup.headers.map((header) => {
-                    const meta = header.column.columnDef.meta as SalesTableColumnMeta;
-                    const filterValue = header.column.getFilterValue();
-
-                    return (
-                      <Table.Cell key={`${header.id}-filter`} {...gridCellStyles}>
-                        {meta.filter === "status" ? (
-                          <select
-                            style={selectFieldStyles}
-                            value={String(filterValue ?? "")}
-                            onChange={(event) =>
-                              header.column.setFilterValue(event.target.value || undefined)
-                            }
-                          >
-                            <option value="">All</option>
-                            {salesOrderStatuses.map((status) => (
-                              <option key={status} value={status}>
-                                {status}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <Input
-                            size="sm"
-                            type={meta.filter === "number" ? "number" : "text"}
-                            value={String(filterValue ?? "")}
-                            placeholder={meta.filter === "number" ? "Equals..." : "Contains..."}
-                            onChange={(event) =>
-                              header.column.setFilterValue(event.target.value || undefined)
-                            }
-                          />
-                        )}
-                      </Table.Cell>
                     );
                   })}
                 </Table.Row>
