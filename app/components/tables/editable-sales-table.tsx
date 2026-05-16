@@ -1,12 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Input, Table } from "@chakra-ui/react";
+import { Badge, Box, Input, Table } from "@chakra-ui/react";
 import { salesOrderStatuses } from "@/lib/db/schema";
 import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
 
 type EditableSalesTableProps = {
   initialRows: SalesOrderRow[];
+};
+
+type ColumnKey = keyof SalesOrderRow;
+
+type EditingCell = {
+  rowIndex: number;
+  column: ColumnKey;
+} | null;
+
+const currencyFormatter = new Intl.NumberFormat("ja-JP", {
+  style: "currency",
+  currency: "JPY",
+  maximumFractionDigits: 0,
+});
+
+const statusColorPalette: Record<SalesOrderStatus, string> = {
+  Delivered: "green",
+  "In Transit": "blue",
+  Pending: "orange",
 };
 
 const gridCellStyles = {
@@ -22,8 +41,8 @@ const inputStyles = {
   fontFamily: "inherit",
   fontSize: "inherit",
   lineHeight: "inherit",
-  minW: "unset",
-  w: "auto",
+  minW: "100%",
+  w: "100%",
   h: "auto",
   px: "0",
   py: "0",
@@ -44,30 +63,46 @@ const selectFieldStyles = {
   fontFamily: "inherit",
   fontSize: "inherit",
   lineHeight: "inherit",
-  minWidth: 0,
+  minWidth: "100%",
   padding: "0 1.25rem 0 0",
+  width: "100%",
 };
 
-function getContentWidth(value: string | number, minimumCharacters: number) {
-  return `${Math.max(String(value).length + 1, minimumCharacters)}ch`;
+function parseNumber(value: string) {
+  return value === "" ? 0 : Number(value);
 }
 
 export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
   const [rows, setRows] = useState(initialRows);
+  const [editingCell, setEditingCell] = useState<EditingCell>(null);
 
-  function updateRow<K extends keyof SalesOrderRow>(
-    orderId: string,
-    key: K,
-    value: SalesOrderRow[K],
-  ) {
+  function updateRow<K extends ColumnKey>(rowIndex: number, key: K, value: SalesOrderRow[K]) {
     setRows((currentRows) =>
-      currentRows.map((row) => (row.orderId === orderId ? { ...row, [key]: value } : row)),
+      currentRows.map((row, index) => (index === rowIndex ? { ...row, [key]: value } : row)),
     );
+  }
+
+  function startEditing(rowIndex: number, column: ColumnKey) {
+    setEditingCell({ rowIndex, column });
+  }
+
+  function stopEditing() {
+    setEditingCell(null);
+  }
+
+  function isEditing(rowIndex: number, column: ColumnKey) {
+    return editingCell?.rowIndex === rowIndex && editingCell.column === column;
+  }
+
+  function handleEditorKeyDown(event: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) {
+    if (event.key === "Enter" || event.key === "Escape") {
+      stopEditing();
+    }
   }
 
   return (
     <Table.ScrollArea maxW="100%">
-      <Table.Root minW="max-content" size="sm" variant="outline" striped>
+      <Table.Root size="sm" variant="outline" striped>
         <Table.Header>
           <Table.Row bg="gray.50">
             <Table.ColumnHeader {...gridCellStyles}>Order ID</Table.ColumnHeader>
@@ -87,124 +122,211 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {rows.map((row) => (
-            <Table.Row key={row.orderId}>
-              <Table.Cell {...gridCellStyles} fontFamily="mono" fontSize="xs">
-                <Input
-                  {...inputStyles}
-                  fontFamily="mono"
-                  fontSize="xs"
-                  style={{ width: getContentWidth(row.orderId, 10) }}
-                  value={row.orderId}
-                  onChange={(event) => updateRow(row.orderId, "orderId", event.target.value)}
-                />
+          {rows.map((row, rowIndex) => (
+            <Table.Row key={`${row.orderId}-${rowIndex}`}>
+              <Table.Cell
+                {...gridCellStyles}
+                fontFamily="mono"
+                fontSize="xs"
+                onDoubleClick={() => startEditing(rowIndex, "orderId")}
+              >
+                {isEditing(rowIndex, "orderId") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    fontFamily="mono"
+                    fontSize="xs"
+                    value={row.orderId}
+                    onBlur={stopEditing}
+                    onChange={(event) => updateRow(rowIndex, "orderId", event.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.orderId
+                )}
               </Table.Cell>
-              <Table.Cell {...gridCellStyles}>
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.orderDate, 11) }}
-                  value={row.orderDate}
-                  onChange={(event) => updateRow(row.orderId, "orderDate", event.target.value)}
-                />
+              <Table.Cell
+                {...gridCellStyles}
+                onDoubleClick={() => startEditing(rowIndex, "orderDate")}
+              >
+                {isEditing(rowIndex, "orderDate") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    value={row.orderDate}
+                    onBlur={stopEditing}
+                    onChange={(event) => updateRow(rowIndex, "orderDate", event.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.orderDate
+                )}
               </Table.Cell>
-              <Table.Cell {...gridCellStyles}>
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.customer, 22) }}
-                  value={row.customer}
-                  onChange={(event) => updateRow(row.orderId, "customer", event.target.value)}
-                />
+              <Table.Cell
+                {...gridCellStyles}
+                onDoubleClick={() => startEditing(rowIndex, "customer")}
+              >
+                {isEditing(rowIndex, "customer") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    value={row.customer}
+                    onBlur={stopEditing}
+                    onChange={(event) => updateRow(rowIndex, "customer", event.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.customer
+                )}
               </Table.Cell>
-              <Table.Cell {...gridCellStyles}>
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.region, 10) }}
-                  value={row.region}
-                  onChange={(event) => updateRow(row.orderId, "region", event.target.value)}
-                />
+              <Table.Cell
+                {...gridCellStyles}
+                onDoubleClick={() => startEditing(rowIndex, "region")}
+              >
+                {isEditing(rowIndex, "region") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    value={row.region}
+                    onBlur={stopEditing}
+                    onChange={(event) => updateRow(rowIndex, "region", event.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.region
+                )}
               </Table.Cell>
-              <Table.Cell {...gridCellStyles}>
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.rep, 14) }}
-                  value={row.rep}
-                  onChange={(event) => updateRow(row.orderId, "rep", event.target.value)}
-                />
+              <Table.Cell
+                {...gridCellStyles}
+                onDoubleClick={() => startEditing(rowIndex, "rep")}
+              >
+                {isEditing(rowIndex, "rep") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    value={row.rep}
+                    onBlur={stopEditing}
+                    onChange={(event) => updateRow(rowIndex, "rep", event.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.rep
+                )}
               </Table.Cell>
-              <Table.Cell {...gridCellStyles}>
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.category, 13) }}
-                  value={row.category}
-                  onChange={(event) => updateRow(row.orderId, "category", event.target.value)}
-                />
+              <Table.Cell
+                {...gridCellStyles}
+                onDoubleClick={() => startEditing(rowIndex, "category")}
+              >
+                {isEditing(rowIndex, "category") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    value={row.category}
+                    onBlur={stopEditing}
+                    onChange={(event) => updateRow(rowIndex, "category", event.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.category
+                )}
               </Table.Cell>
-              <Table.Cell {...gridCellStyles}>
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.product, 22) }}
-                  value={row.product}
-                  onChange={(event) => updateRow(row.orderId, "product", event.target.value)}
-                />
+              <Table.Cell
+                {...gridCellStyles}
+                onDoubleClick={() => startEditing(rowIndex, "product")}
+              >
+                {isEditing(rowIndex, "product") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    value={row.product}
+                    onBlur={stopEditing}
+                    onChange={(event) => updateRow(rowIndex, "product", event.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.product
+                )}
               </Table.Cell>
-              <Table.Cell {...gridCellStyles} textAlign="end">
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.quantity, 5) }}
-                  type="number"
-                  textAlign="end"
-                  value={row.quantity}
-                  onChange={(event) =>
-                    updateRow(row.orderId, "quantity", Number(event.target.value))
-                  }
-                />
-              </Table.Cell>
-              <Table.Cell {...gridCellStyles} textAlign="end">
-                <Input
-                  {...inputStyles}
-                  style={{ width: getContentWidth(row.unitPrice, 7) }}
-                  type="number"
-                  textAlign="end"
-                  value={row.unitPrice}
-                  onChange={(event) =>
-                    updateRow(row.orderId, "unitPrice", Number(event.target.value))
-                  }
-                />
-              </Table.Cell>
-              <Table.Cell {...gridCellStyles}>
-                <Box display="inline-block" position="relative">
-                  <select
-                    style={{
-                      ...selectFieldStyles,
-                      width: getContentWidth(row.status, 13),
-                    }}
-                    value={row.status}
+              <Table.Cell
+                {...gridCellStyles}
+                textAlign="end"
+                onDoubleClick={() => startEditing(rowIndex, "quantity")}
+              >
+                {isEditing(rowIndex, "quantity") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    type="number"
+                    textAlign="end"
+                    value={row.quantity}
+                    onBlur={stopEditing}
                     onChange={(event) =>
-                      updateRow(
-                        row.orderId,
-                        "status",
-                        event.target.value as SalesOrderStatus,
-                      )
+                      updateRow(rowIndex, "quantity", parseNumber(event.target.value))
                     }
-                  >
-                    {salesOrderStatuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                  <Box
-                    aria-hidden="true"
-                    color="gray.500"
-                    insetEnd="0"
-                    pointerEvents="none"
-                    position="absolute"
-                    top="50%"
-                    transform="translateY(-50%)"
-                  >
-                    ▾
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  row.quantity
+                )}
+              </Table.Cell>
+              <Table.Cell
+                {...gridCellStyles}
+                textAlign="end"
+                onDoubleClick={() => startEditing(rowIndex, "unitPrice")}
+              >
+                {isEditing(rowIndex, "unitPrice") ? (
+                  <Input
+                    {...inputStyles}
+                    autoFocus
+                    type="number"
+                    textAlign="end"
+                    value={row.unitPrice}
+                    onBlur={stopEditing}
+                    onChange={(event) =>
+                      updateRow(rowIndex, "unitPrice", parseNumber(event.target.value))
+                    }
+                    onKeyDown={handleEditorKeyDown}
+                  />
+                ) : (
+                  currencyFormatter.format(row.unitPrice)
+                )}
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} onDoubleClick={() => startEditing(rowIndex, "status")}>
+                {isEditing(rowIndex, "status") ? (
+                  <Box position="relative">
+                    <select
+                      autoFocus
+                      style={selectFieldStyles}
+                      value={row.status}
+                      onBlur={stopEditing}
+                      onChange={(event) =>
+                        updateRow(rowIndex, "status", event.target.value as SalesOrderStatus)
+                      }
+                      onKeyDown={handleEditorKeyDown}
+                    >
+                      {salesOrderStatuses.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                    <Box
+                      aria-hidden="true"
+                      color="gray.500"
+                      insetEnd="0"
+                      pointerEvents="none"
+                      position="absolute"
+                      top="50%"
+                      transform="translateY(-50%)"
+                    >
+                      ▾
+                    </Box>
                   </Box>
-                </Box>
+                ) : (
+                  <Badge colorPalette={statusColorPalette[row.status]} variant="subtle">
+                    {row.status}
+                  </Badge>
+                )}
               </Table.Cell>
             </Table.Row>
           ))}
