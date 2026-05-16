@@ -74,11 +74,24 @@ const StatusCell = memo(function StatusCell({
   columnData,
   stopEditing,
 }: CellProps<SalesOrderStatus, StatusColumnData>) {
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    if (focus) {
+      selectRef.current?.focus();
+      return;
+    }
+
+    selectRef.current?.blur();
+  }, [focus]);
+
   return (
     <div className="rdsg-select-cell">
       <select
+        ref={selectRef}
         className="dsg-input rdsg-select-input"
         disabled={disabled}
+        tabIndex={-1}
         value={rowData}
         style={{ pointerEvents: focus ? undefined : "none" }}
         onBlur={() => stopEditing({ nextRow: false })}
