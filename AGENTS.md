@@ -33,4 +33,5 @@
 - After the implementation, please run npm run {lint,type-check} and after that, git commit.  
 - Never run npm run build to check after implementation.  
 - Keep each Git commit focused on a single, independent change.  
+- Before you run a dev server, confirm there are no other dev servers.  
 
