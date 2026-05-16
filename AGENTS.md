@@ -27,3 +27,9 @@
 
 ## Security & Configuration Tips
 - Secrets live in Cloudflare env vars; never commit credentials. Update `cloudflare-env.d.ts` and regenerate types when adding keys, and verify `wrangler.jsonc` stays in sync with deployed bindings.
+
+## Development Flow
+
+- After the implementation, please git commit.  
+- Keep each Git commit focused on a single, independent change.  
+
