@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Box, Text } from "@chakra-ui/react";
 import {
   DataSheetGrid,
@@ -82,9 +82,17 @@ export function ReactDataSheetGridSalesTableClient({
   const [rows, setRows] = useState(() => toGridRows(initialRows));
   const [isPending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isGridReady, setIsGridReady] = useState(false);
+  const hasMountedRef = useRef(false);
 
   useEffect(() => {
+    hasMountedRef.current = true;
     setRows(toGridRows(initialRows));
+    setIsGridReady(true);
+
+    return () => {
+      hasMountedRef.current = false;
+    };
   }, [initialRows]);
 
   const columns = useMemo<Column<GridRow>[]>(() => {
@@ -200,6 +208,10 @@ export function ReactDataSheetGridSalesTableClient({
   }, []);
 
   function handleChange(nextRows: GridRow[], operations: Operation[]) {
+    if (!hasMountedRef.current) {
+      return;
+    }
+
     const previousRows = rows;
     setRows(nextRows);
     setSaveError(null);
@@ -252,20 +264,24 @@ export function ReactDataSheetGridSalesTableClient({
 
   return (
     <Box className={`${designSystemClassNames.dataGrid} react-datasheet-grid-comparison`}>
-      <DataSheetGrid<GridRow>
-        value={rows}
-        onChange={handleChange}
-        columns={columns}
-        rowKey="__rowKey"
-        height={gridHeight}
-        rowHeight={gridRowHeight}
-        headerRowHeight={gridRowHeight}
-        gutterColumn={false}
-        lockRows
-        disableContextMenu
-        autoAddRow={false}
-        addRowsComponent={false}
-      />
+      {isGridReady ? (
+        <DataSheetGrid<GridRow>
+          value={rows}
+          onChange={handleChange}
+          columns={columns}
+          rowKey="__rowKey"
+          height={gridHeight}
+          rowHeight={gridRowHeight}
+          headerRowHeight={gridRowHeight}
+          gutterColumn={false}
+          lockRows
+          disableContextMenu
+          autoAddRow={false}
+          addRowsComponent={false}
+        />
+      ) : (
+        <Box minH={`${gridHeight}px`} />
+      )}
       {(isPending || saveError) && (
         <Text
           px="4"
