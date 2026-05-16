@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Box, Text } from "@chakra-ui/react";
+import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import { HotTable, type HotTableRef } from "@handsontable/react-wrapper";
 import type { CellChange } from "handsontable/common";
 import { textRenderer } from "handsontable/renderers/textRenderer";
@@ -23,6 +23,13 @@ type HandsontableSalesTableClientProps = {
 
 type ColumnKey = keyof SalesOrderRow;
 type HandsontableCore = Parameters<typeof textRenderer>[0];
+type UndoRedoPlugin = {
+  clear: () => void;
+  undo: () => void;
+  redo: () => void;
+  isUndoAvailable: () => boolean;
+  isRedoAvailable: () => boolean;
+};
 
 const columnKeys: ColumnKey[] = [
   "orderId",
@@ -239,6 +246,12 @@ function handleAfterGetColHeader(column: number, th: HTMLTableCellElement) {
   }
 }
 
+function getUndoRedoPlugin(hotRef: React.RefObject<HotTableRef | null>) {
+  return hotRef.current?.hotInstance?.getPlugin("undoRedo") as
+    | UndoRedoPlugin
+    | undefined;
+}
+
 export function HandsontableSalesTableClient({
   initialRows,
 }: HandsontableSalesTableClientProps) {
@@ -246,12 +259,49 @@ export function HandsontableSalesTableClient({
   const rowsRef = useRef(cloneRows(initialRows));
   const [isPending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  function syncUndoRedoState() {
+    const undoRedo = getUndoRedoPlugin(hotRef);
+
+    setCanUndo(Boolean(undoRedo?.isUndoAvailable()));
+    setCanRedo(Boolean(undoRedo?.isRedoAvailable()));
+  }
 
   useEffect(() => {
     const nextRows = cloneRows(initialRows);
     rowsRef.current = nextRows;
-    hotRef.current?.hotInstance?.loadData(nextRows, "external");
+    const hotInstance = hotRef.current?.hotInstance;
+
+    hotInstance?.loadData(nextRows, "external");
+    getUndoRedoPlugin(hotRef)?.clear();
+    syncUndoRedoState();
   }, [initialRows]);
+
+  function handleUndo() {
+    const undoRedo = getUndoRedoPlugin(hotRef);
+
+    if (!undoRedo?.isUndoAvailable()) {
+      return;
+    }
+
+    setSaveError(null);
+    undoRedo.undo();
+    syncUndoRedoState();
+  }
+
+  function handleRedo() {
+    const undoRedo = getUndoRedoPlugin(hotRef);
+
+    if (!undoRedo?.isRedoAvailable()) {
+      return;
+    }
+
+    setSaveError(null);
+    undoRedo.redo();
+    syncUndoRedoState();
+  }
 
   function handleAfterChange(changes: CellChange[] | null, source: string) {
     if (
@@ -278,9 +328,11 @@ export function HandsontableSalesTableClient({
     }
 
     if (changedPhysicalRows.size === 0) {
+      syncUndoRedoState();
       return;
     }
 
+    syncUndoRedoState();
     setSaveError(null);
 
     startTransition(async () => {
@@ -307,6 +359,29 @@ export function HandsontableSalesTableClient({
 
   return (
     <Box className={designSystemClassNames.dataGrid}>
+      <HStack px="4" py="3" justify="space-between" borderBottomWidth="1px" borderColor="border">
+        <HStack gap="2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleUndo}
+            disabled={!canUndo || isPending}
+          >
+            Undo
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRedo}
+            disabled={!canRedo || isPending}
+          >
+            Redo
+          </Button>
+        </HStack>
+        <Text color="fg.muted" fontSize="sm">
+          Cmd/Ctrl+Z, Cmd/Ctrl+Y
+        </Text>
+      </HStack>
       <HotTable
         ref={hotRef}
         className="handsontable-comparison"
@@ -321,11 +396,17 @@ export function HandsontableSalesTableClient({
         filters
         dropdownMenu
         columnSorting
+        undo
         licenseKey="non-commercial-and-evaluation"
         themeName="ht-theme-main"
         textEllipsis
         afterChange={handleAfterChange}
         afterGetColHeader={handleAfterGetColHeader}
+        afterInit={syncUndoRedoState}
+        afterUndo={syncUndoRedoState}
+        afterRedo={syncUndoRedoState}
+        afterUndoStackChange={syncUndoRedoState}
+        afterRedoStackChange={syncUndoRedoState}
       />
       {(isPending || saveError) && (
         <Text px="4" py="3" color={saveError ? "fg.error" : "fg.muted"} fontSize="sm">
