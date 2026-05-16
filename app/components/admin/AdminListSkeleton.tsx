@@ -1,31 +1,27 @@
 "use client";
 
+import { Box, Container, HStack, Skeleton, VStack } from "@chakra-ui/react";
+
 export default function AdminListSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
-          <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
-          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6">
-            <div className="space-y-4">
+    <Box py={{ base: 8, md: 10 }}>
+      <Container maxW="6xl" px={{ base: 4, md: 6 }}>
+        <VStack align="stretch" gap="6">
+          <Skeleton height="10" width="36" rounded="md" />
+          <Box bg="whiteAlpha.900" borderWidth="1px" rounded="xl" p="6">
+            <VStack align="stretch" gap="4">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse flex-1" />
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-20" />
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-20" />
-                </div>
+                <HStack key={i} gap="4">
+                  <Skeleton height="4" flex="1" rounded="md" />
+                  <Skeleton height="4" width="20" rounded="md" />
+                  <Skeleton height="4" width="24" rounded="md" />
+                  <Skeleton height="4" width="20" rounded="md" />
+                </HStack>
               ))}
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+            </VStack>
+          </Box>
+        </VStack>
+      </Container>
+    </Box>
   );
 }

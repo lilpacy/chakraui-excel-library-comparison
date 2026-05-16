@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
+import { Box, Container, Text } from "@chakra-ui/react";
 import { redirect } from "next/navigation";
 import { getProfile } from "@/app/actions/profile";
 import { ProfileForm } from "./components/ProfileForm";
@@ -19,17 +20,19 @@ export default async function ProfilePage() {
   const profile = await getProfile();
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Profile</h1>
-        <p className="text-gray-600">Manage your profile settings</p>
-      </div>
+    <Container maxW="2xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 10 }}>
+      <Box mb="8">
+        <Text as="h1" fontSize="3xl" fontWeight="bold" mb="2">
+          Profile
+        </Text>
+        <Text color="gray.600">Manage your profile settings</Text>
+      </Box>
 
-      <div className="bg-white rounded-lg shadow p-6">
+      <Box bg="whiteAlpha.900" borderWidth="1px" rounded="xl" boxShadow="sm" p={{ base: 5, md: 6 }}>
         <Suspense fallback={<div>Loading profile...</div>}>
           <ProfileForm profile={profile} />
         </Suspense>
-      </div>
-    </div>
+      </Box>
+    </Container>
   );
 }

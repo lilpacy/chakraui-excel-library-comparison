@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     unoptimized: true, // disable on Cloudflare workers
   },
   experimental: {
+    optimizePackageImports: ["@chakra-ui/react"],
     serverActions: {
       bodySizeLimit: "5mb", // for uploading profile image
     },

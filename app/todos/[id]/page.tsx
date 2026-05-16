@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { Box, Container, Text } from "@chakra-ui/react";
 import { redirect } from "next/navigation";
 import { getTodoById } from "@/app/actions/todos";
 import { EditTodoForm } from "./EditTodoForm";
@@ -24,25 +25,29 @@ export default async function EditTodoPage({
     const todo = await getTodoById(id);
 
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Edit Todo</h1>
-          <p className="text-gray-600">Update your todo information</p>
-        </div>
+      <Container maxW="2xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 10 }}>
+        <Box mb="8">
+          <Text as="h1" fontSize="3xl" fontWeight="bold" mb="2">
+            Edit Todo
+          </Text>
+          <Text color="gray.600">Update your todo information</Text>
+        </Box>
 
         <EditTodoForm todo={todo} />
-      </div>
+      </Container>
     );
   } catch (error) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-          <p className="text-gray-600">
+      <Container maxW="2xl" px={{ base: 4, md: 6 }} py={{ base: 8, md: 10 }}>
+        <Box textAlign="center">
+          <Text as="h1" fontSize="2xl" fontWeight="bold" color="red.600" mb="4">
+            Error
+          </Text>
+          <Text color="gray.600">
             {error instanceof Error ? error.message : "Todo not found"}
-          </p>
-        </div>
-      </div>
+          </Text>
+        </Box>
+      </Container>
     );
   }
 }

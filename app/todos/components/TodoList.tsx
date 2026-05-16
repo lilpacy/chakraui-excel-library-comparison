@@ -1,9 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { format } from "date-fns";
 import { deleteTodo, toggleTodoCompleted } from "@/app/actions/todos";
 import { useState, useTransition } from "react";
+import {
+  Box,
+  Button,
+  Checkbox,
+  HStack,
+  Link as ChakraLink,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import NextLink from "next/link";
 
 type Todo = {
   id: string;
@@ -36,64 +45,82 @@ export function TodoList({ todos }: { todos: Todo[] }) {
 
   if (todos.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">No todos yet. Create your first todo above!</p>
-      </div>
+      <Box py="12" textAlign="center">
+        <Text fontSize="lg" color="gray.500">
+          No todos yet. Create your first todo above!
+        </Text>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <VStack gap="4" align="stretch">
       {todos.map((todo) => (
-        <div
+        <Box
           key={todo.id}
-          className={`border rounded-lg p-4 transition-opacity ${
-            deletingId === todo.id ? "opacity-50" : ""
-          }`}
+          borderWidth="1px"
+          rounded="xl"
+          p="4"
+          bg="whiteAlpha.900"
+          opacity={deletingId === todo.id ? 0.5 : 1}
+          transition="opacity 0.2s ease"
         >
-          <div className="flex items-start gap-4">
-            <input
-              type="checkbox"
+          <HStack align="start" gap="4">
+            <Checkbox.Root
               checked={todo.completed}
-              onChange={() => handleToggle(todo.id)}
               disabled={isPending}
-              className="mt-1 h-5 w-5 rounded border-gray-300 cursor-pointer"
-            />
-            <div className="flex-1">
-              <Link href={`/todos/${todo.id}`}>
-                <h3
-                  className={`text-lg font-semibold hover:text-blue-600 ${
-                    todo.completed ? "line-through text-gray-500" : ""
-                  }`}
-                >
-                  {todo.title}
-                </h3>
-              </Link>
+              mt="1"
+              aria-label={`Toggle completion for ${todo.title}`}
+              onCheckedChange={() => handleToggle(todo.id)}
+            >
+              <Checkbox.HiddenInput />
+              <Checkbox.Control />
+            </Checkbox.Root>
+            <Box flex="1">
+              <ChakraLink asChild _hover={{ textDecoration: "none" }}>
+                <NextLink href={`/todos/${todo.id}`}>
+                  <Text
+                    as="h3"
+                    fontSize="lg"
+                    fontWeight="semibold"
+                    color={todo.completed ? "gray.500" : "gray.900"}
+                    textDecoration={todo.completed ? "line-through" : "none"}
+                    _hover={{ color: "blue.600" }}
+                  >
+                    {todo.title}
+                  </Text>
+                </NextLink>
+              </ChakraLink>
               {todo.description && (
-                <p className="text-gray-600 mt-1">{todo.description}</p>
+                <Text mt="1" color="gray.600">
+                  {todo.description}
+                </Text>
               )}
-              <p className="text-sm text-gray-400 mt-2">
+              <Text mt="2" fontSize="sm" color="gray.400">
                 Created {format(new Date(todo.createdAt), "MMM d, yyyy")}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Link
-                href={`/todos/${todo.id}`}
-                className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-              >
-                Edit
-              </Link>
-              <button
+              </Text>
+            </Box>
+            <HStack gap="2">
+              <ChakraLink asChild>
+                <NextLink href={`/todos/${todo.id}`}>
+                  <Button as="span" variant="outline" size="sm">
+                    Edit
+                  </Button>
+                </NextLink>
+              </ChakraLink>
+              <Button
                 onClick={() => handleDelete(todo.id)}
                 disabled={isPending || deletingId === todo.id}
-                className="px-3 py-1 text-sm border rounded hover:bg-red-50 hover:border-red-300 hover:text-red-600 disabled:opacity-50"
+                variant="outline"
+                colorPalette="red"
+                size="sm"
               >
                 Delete
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+            </HStack>
+          </HStack>
+        </Box>
       ))}
-    </div>
+    </VStack>
   );
 }

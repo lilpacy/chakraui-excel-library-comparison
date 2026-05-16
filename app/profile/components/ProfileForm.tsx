@@ -3,6 +3,15 @@
 import { useState, useTransition, useRef } from "react";
 import { uploadProfileImage, deleteProfileImage } from "@/app/actions/profile";
 import Image from "next/image";
+import {
+  Box,
+  Button,
+  HStack,
+  Input,
+  Separator,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 
 type Profile = {
   userId: string;
@@ -88,53 +97,74 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Profile Image</h2>
+    <VStack gap="6" align="stretch">
+      <Box>
+        <Text as="h2" fontSize="xl" fontWeight="semibold" mb="4">
+          Profile Image
+        </Text>
 
-        {/* Current Profile Image */}
         {profile?.profileImageUrl && !previewUrl && (
-          <div className="mb-4">
-            <p className="text-sm text-gray-600 mb-2">Current image:</p>
-            <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 relative">
+          <Box mb="4">
+            <Text fontSize="sm" color="gray.600" mb="2">
+              Current image:
+            </Text>
+            <Box
+              boxSize="32"
+              rounded="full"
+              overflow="hidden"
+              bg="gray.100"
+              position="relative"
+            >
               <Image
                 src={`/api/images/${profile.profileImageUrl}`}
                 alt="Profile"
                 fill
-                className="object-cover"
+                style={{ objectFit: "cover" }}
               />
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
+            </Box>
+            <Text mt="2" fontSize="xs" color="gray.500">
               Image stored in R2: {profile.profileImageUrl}
-            </p>
-          </div>
+            </Text>
+          </Box>
         )}
 
-        {/* Preview */}
         {previewUrl && (
-          <div className="mb-4">
-            <p className="text-sm text-gray-600 mb-2">Preview:</p>
-            <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 relative">
+          <Box mb="4">
+            <Text fontSize="sm" color="gray.600" mb="2">
+              Preview:
+            </Text>
+            <Box
+              boxSize="32"
+              rounded="full"
+              overflow="hidden"
+              bg="gray.100"
+              position="relative"
+            >
               <Image
                 src={previewUrl}
                 alt="Preview"
                 fill
-                className="object-cover"
+                style={{ objectFit: "cover" }}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
-        {/* Upload Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="image"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Upload new image
+        <form onSubmit={handleSubmit}>
+          <VStack gap="4" align="stretch">
+          <Box>
+            <label htmlFor="image">
+              <Text
+                display="block"
+                fontSize="sm"
+                fontWeight="medium"
+                color="gray.700"
+                mb="2"
+              >
+                Upload new image
+              </Text>
             </label>
-            <input
+            <Input
               ref={fileInputRef}
               type="file"
               id="image"
@@ -142,65 +172,77 @@ export function ProfileForm({ profile }: { profile: Profile }) {
               accept="image/*"
               onChange={handleFileChange}
               disabled={isPending}
-              className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100
-                disabled:opacity-50"
+              p="1.5"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <Text fontSize="xs" color="gray.500" mt="1">
               Max file size: 5MB. Supported formats: JPG, PNG, GIF
-            </p>
-          </div>
+            </Text>
+          </Box>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            <Box
+              p="3"
+              bg="red.50"
+              borderWidth="1px"
+              borderColor="red.200"
+              rounded="md"
+              color="red.700"
+              fontSize="sm"
+            >
               {error}
-            </div>
+            </Box>
           )}
 
           {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded text-green-700 text-sm">
+            <Box
+              p="3"
+              bg="green.50"
+              borderWidth="1px"
+              borderColor="green.200"
+              rounded="md"
+              color="green.700"
+              fontSize="sm"
+            >
               {success}
-            </div>
+            </Box>
           )}
 
-          <div className="flex gap-3">
-            <button
+          <HStack gap="3" flexWrap="wrap">
+            <Button
               type="submit"
               disabled={isPending || !previewUrl}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              colorPalette="blue"
             >
               {isPending ? "Uploading..." : "Upload Image"}
-            </button>
+            </Button>
 
             {profile?.profileImageUrl && (
-              <button
+              <Button
                 type="button"
                 onClick={handleDelete}
                 disabled={isPending}
-                className="px-4 py-2 border border-red-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                variant="outline"
+                colorPalette="red"
               >
                 Delete Current Image
-              </button>
+              </Button>
             )}
-          </div>
+          </HStack>
+          </VStack>
         </form>
-      </div>
+      </Box>
 
-      {/* Info */}
-      <div className="pt-6 border-t">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">
+      <Box>
+        <Separator mb="6" />
+        <Text as="h3" fontSize="sm" fontWeight="medium" color="gray.700" mb="2">
           Storage Information
-        </h3>
-        <p className="text-sm text-gray-600">
+        </Text>
+        <Text fontSize="sm" color="gray.600">
           Your profile images are securely stored in Cloudflare R2 object
           storage. Images are automatically optimized and served globally
           through Cloudflare&apos;s CDN.
-        </p>
-      </div>
-    </div>
+        </Text>
+      </Box>
+    </VStack>
   );
 }

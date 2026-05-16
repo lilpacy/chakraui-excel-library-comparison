@@ -1,49 +1,57 @@
+import { Box, Container, Link, Text } from "@chakra-ui/react";
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-gray-200 bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-gray-500">
-        <p>
+    <Box as="footer" borderTopWidth="1px" bg="whiteAlpha.800">
+      <Container maxW="6xl" px={{ base: 4, md: 6 }} py="6" textAlign="center">
+        <Text fontSize="sm" color="gray.500">
           Built with{" "}
-          <a
+          <Link
             href="https://nextjs.org"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            color="blue.600"
+            _hover={{ textDecoration: "underline" }}
           >
             Next.js
-          </a>
+          </Link>
           ,{" "}
-          <a
+          <Link
             href="https://www.cloudflare.com/developer-platform/workers/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            color="blue.600"
+            _hover={{ textDecoration: "underline" }}
           >
             Cloudflare Workers
-          </a>
+          </Link>
           ,{" "}
-          <a
+          <Link
             href="https://developers.cloudflare.com/d1/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            color="blue.600"
+            _hover={{ textDecoration: "underline" }}
           >
             D1
-          </a>
+          </Link>
           , and{" "}
-          <a
+          <Link
             href="https://developers.cloudflare.com/r2/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            color="blue.600"
+            _hover={{ textDecoration: "underline" }}
           >
             R2
-          </a>
-        </p>
-        <p className="mt-2">© {currentYear} CF Next Boilerplate</p>
-      </div>
-    </footer>
+          </Link>
+        </Text>
+        <Text mt="2" fontSize="sm" color="gray.500">
+          © {currentYear} CF Next Boilerplate
+        </Text>
+      </Container>
+    </Box>
   );
 }

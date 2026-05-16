@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
+import { Box, Button, Center, Link as ChakraLink, Text, VStack } from "@chakra-ui/react";
+import NextLink from "next/link";
 
 export default function Error({
   error,
@@ -15,32 +16,42 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full px-6 py-8 bg-white shadow-lg rounded-lg text-center">
-        <div className="mb-4">
-          <h1 className="text-6xl font-bold text-red-600">Error</h1>
-          <h2 className="text-2xl font-semibold text-gray-700 mt-2">
+    <Center minH="100vh" px="4">
+      <Box
+        w="full"
+        maxW="md"
+        px="6"
+        py="8"
+        bg="whiteAlpha.900"
+        borderWidth="1px"
+        boxShadow="lg"
+        rounded="xl"
+        textAlign="center"
+      >
+        <Box mb="4">
+          <Text as="h1" fontSize="6xl" fontWeight="bold" color="red.600">
+            Error
+          </Text>
+          <Text as="h2" fontSize="2xl" fontWeight="semibold" color="gray.700" mt="2">
             Something went wrong
-          </h2>
-        </div>
-        <p className="text-gray-600 mb-6">
+          </Text>
+        </Box>
+        <Text color="gray.600" mb="6">
           An unexpected error occurred. Please try again.
-        </p>
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={reset}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-          >
+        </Text>
+        <VStack gap="3">
+          <Button onClick={reset} colorPalette="blue" width="full">
             Try Again
-          </button>
-          <Link
-            href="/"
-            className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Go Home
-          </Link>
-        </div>
-      </div>
-    </div>
+          </Button>
+          <ChakraLink asChild width="full">
+            <NextLink href="/">
+              <Button as="span" width="full" variant="subtle">
+                Go Home
+              </Button>
+            </NextLink>
+          </ChakraLink>
+        </VStack>
+      </Box>
+    </Center>
   );
 }

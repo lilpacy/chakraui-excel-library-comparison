@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Box } from "@chakra-ui/react";
 import GoogleAnalytics from "./components/GoogleAnalytics";
+import { Provider } from "./components/ui/provider";
 import Navigation from "./components/navigation";
 import Footer from "./components/footer";
 import "./styles/globals.scss";
@@ -62,16 +64,24 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen flex-col`}
-        >
-          <Suspense fallback={null}>
-            <GoogleAnalytics />
-          </Suspense>
-          <Navigation />
-          <main className="flex-1">{children}</main>
-          <Footer />
+      <html
+        lang="en"
+        className={`${geistSans.variable} ${geistMono.variable}`}
+        suppressHydrationWarning
+      >
+        <body>
+          <Provider>
+            <Suspense fallback={null}>
+              <GoogleAnalytics />
+            </Suspense>
+            <Box minH="100vh" display="flex" flexDirection="column">
+              <Navigation />
+              <Box as="main" flex="1">
+                {children}
+              </Box>
+              <Footer />
+            </Box>
+          </Provider>
         </body>
       </html>
     </ClerkProvider>

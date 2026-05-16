@@ -2,6 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Box,
+  Button,
+  Checkbox,
+  HStack,
+  Input,
+  Textarea,
+  VStack,
+} from "@chakra-ui/react";
 import { updateTodo } from "@/app/actions/todos";
 
 type Todo = {
@@ -48,78 +57,87 @@ export function EditTodoForm({ todo }: { todo: Todo }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-lg p-6">
+    <Box as="form" onSubmit={handleSubmit} borderWidth="1px" rounded="xl" p={{ base: 5, md: 6 }} bg="whiteAlpha.900">
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+        <Box
+          mb="4"
+          p="3"
+          bg="red.50"
+          borderWidth="1px"
+          borderColor="red.200"
+          color="red.700"
+          rounded="md"
+        >
           {error}
-        </div>
+        </Box>
       )}
 
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            Title
+      <VStack gap="4" align="stretch">
+        <Box>
+          <label htmlFor="title">
+            <Box display="block" fontSize="sm" fontWeight="medium" mb="1">
+              Title
+            </Box>
           </label>
-          <input
+          <Input
             type="text"
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isPending}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter todo title"
             maxLength={200}
           />
-        </div>
+        </Box>
 
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            Description (optional)
+        <Box>
+          <label htmlFor="description">
+            <Box display="block" fontSize="sm" fontWeight="medium" mb="1">
+              Description (optional)
+            </Box>
           </label>
-          <textarea
+          <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={isPending}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter todo description"
             rows={4}
             maxLength={1000}
           />
-        </div>
+        </Box>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
+        <Checkbox.Root
             id="completed"
             checked={completed}
-            onChange={(e) => setCompleted(e.target.checked)}
             disabled={isPending}
-            className="h-5 w-5 rounded border-gray-300"
-          />
-          <label htmlFor="completed" className="text-sm font-medium">
-            Mark as completed
-          </label>
-        </div>
+            onCheckedChange={(details) => setCompleted(details.checked === true)}
+          >
+            <Checkbox.HiddenInput />
+            <Checkbox.Control />
+            <Checkbox.Label>Mark as completed</Checkbox.Label>
+          </Checkbox.Root>
 
-        <div className="flex gap-3 pt-4">
-          <button
+        <HStack gap="3" pt="4" align="stretch">
+          <Button
             type="submit"
             disabled={isPending || !title.trim()}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            flex="1"
+            colorPalette="blue"
           >
             {isPending ? "Saving..." : "Save Changes"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleCancel}
             disabled={isPending}
-            className="flex-1 px-4 py-2 border rounded hover:bg-gray-50 disabled:opacity-50"
+            flex="1"
+            variant="outline"
           >
             Cancel
-          </button>
-        </div>
-      </div>
-    </form>
+          </Button>
+        </HStack>
+      </VStack>
+    </Box>
   );
 }

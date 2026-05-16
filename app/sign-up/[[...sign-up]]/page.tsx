@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
+import { Center } from "@chakra-ui/react";
 
 export const metadata: Metadata = {
   title: "Sign Up",
@@ -18,8 +19,8 @@ export const metadata: Metadata = {
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <Center minH="100vh" px="4">
       <SignUp />
-    </div>
+    </Center>
   );
 }

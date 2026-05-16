@@ -1,9 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
+import {
+  Box,
+  Button,
+  Container,
+  HStack,
+  Link as ChakraLink,
+  VStack,
+} from "@chakra-ui/react";
+import NextLink from "next/link";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -30,109 +38,129 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link
-            href="/"
-            className="text-xl font-bold !text-gray-900 hover:!border-b-0 hover:!text-gray-700"
+    <Box as="nav" bg="whiteAlpha.900" borderBottomWidth="1px" boxShadow="sm">
+      <Container maxW="6xl" px={{ base: 4, md: 6 }}>
+        <HStack minH="16" justify="space-between">
+          <ChakraLink
+            asChild
+            color="gray.900"
+            fontSize="xl"
+            fontWeight="bold"
+            _hover={{ color: "gray.700", textDecoration: "none" }}
           >
-            CF Next Boilerplate
-          </Link>
+            <NextLink href="/">CF Next Boilerplate</NextLink>
+          </ChakraLink>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <HStack gap="8" display={{ base: "none", md: "flex" }}>
             {navLinks.map((link) => {
               const active = isLinkActive(link);
 
               return (
-                <Link
+                <ChakraLink
                   key={link.href}
-                  href={link.href}
-                  className={`${
-                    active
-                      ? "!text-blue-600 font-semibold border-b-2 border-blue-600"
-                      : "!text-gray-700 hover:!text-blue-600"
-                  } transition-colors pb-1 hover:!border-b-2 hover:!border-blue-300`}
+                  asChild
+                  pb="1"
+                  borderBottomWidth="2px"
+                  borderColor={active ? "blue.600" : "transparent"}
+                  color={active ? "blue.600" : "gray.700"}
+                  fontWeight={active ? "semibold" : "medium"}
+                  transition="colors 0.2s ease, border-color 0.2s ease"
+                  _hover={{
+                    color: "blue.600",
+                    borderColor: active ? "blue.600" : "blue.300",
+                    textDecoration: "none",
+                  }}
                 >
-                  {link.label}
-                </Link>
+                  <NextLink href={link.href}>{link.label}</NextLink>
+                </ChakraLink>
               );
             })}
             {isSignedIn ? (
               <UserButton />
             ) : (
-              <Link
-                href="/sign-in"
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              <ChakraLink
+                asChild
+                bg="blue.600"
+                color="white"
+                px="4"
+                py="2"
+                rounded="md"
+                fontWeight="medium"
+                _hover={{ bg: "blue.700", textDecoration: "none" }}
               >
-                Sign In
-              </Link>
+                <NextLink href="/sign-in">Sign In</NextLink>
+              </ChakraLink>
             )}
-          </div>
+          </HStack>
 
-          {/* Mobile Menu Button */}
-          <button
+          <Button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            display={{ base: "inline-flex", md: "none" }}
+            variant="outline"
+            colorPalette="blue"
             aria-label="Toggle menu"
           >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              {isMenuOpen ? (
-                <path d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-        </div>
+            {isMenuOpen ? "Close" : "Menu"}
+          </Button>
+        </HStack>
 
-        {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden pb-4">
-            <div className="flex flex-col space-y-2">
-              {navLinks.map((link) => {
-                const active = isLinkActive(link);
+          <VStack
+            display={{ base: "flex", md: "none" }}
+            align="stretch"
+            gap="2"
+            pb="4"
+            borderTopWidth="1px"
+          >
+            {navLinks.map((link) => {
+              const active = isLinkActive(link);
 
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`${
-                      active
-                        ? "!text-blue-600 font-semibold bg-blue-50"
-                        : "!text-gray-700 hover:!text-blue-600 hover:bg-gray-50"
-                    } px-3 py-2 rounded-md transition-colors hover:!border-b-0`}
-                  >
+              return (
+                <ChakraLink
+                  key={link.href}
+                  asChild
+                  px="3"
+                  py="2"
+                  rounded="md"
+                  bg={active ? "blue.50" : "transparent"}
+                  color={active ? "blue.600" : "gray.700"}
+                  fontWeight={active ? "semibold" : "medium"}
+                  _hover={{
+                    bg: active ? "blue.50" : "gray.50",
+                    color: "blue.600",
+                    textDecoration: "none",
+                  }}
+                >
+                  <NextLink href={link.href} onClick={() => setIsMenuOpen(false)}>
                     {link.label}
-                  </Link>
-                );
-              })}
-              <div className="px-3 py-2">
-                {isSignedIn ? (
-                  <UserButton />
-                ) : (
-                  <Link
-                    href="/sign-in"
-                    className="block text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
+                  </NextLink>
+                </ChakraLink>
+              );
+            })}
+            <Box pt="1">
+              {isSignedIn ? (
+                <UserButton />
+              ) : (
+                <ChakraLink
+                  asChild
+                  display="inline-flex"
+                  bg="blue.600"
+                  color="white"
+                  px="4"
+                  py="2"
+                  rounded="md"
+                  fontWeight="medium"
+                  _hover={{ bg: "blue.700", textDecoration: "none" }}
+                >
+                  <NextLink href="/sign-in" onClick={() => setIsMenuOpen(false)}>
                     Sign In
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
+                  </NextLink>
+                </ChakraLink>
+              )}
+            </Box>
+          </VStack>
         )}
-      </div>
-    </nav>
+      </Container>
+    </Box>
   );
 }

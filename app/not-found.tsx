@@ -1,25 +1,45 @@
-import Link from "next/link";
+import { Box, Center, Link as ChakraLink, Text } from "@chakra-ui/react";
+import NextLink from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full px-6 py-8 bg-white shadow-lg rounded-lg text-center">
-        <div className="mb-4">
-          <h1 className="text-6xl font-bold text-gray-900">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-700 mt-2">
+    <Center minH="100vh" px="4">
+      <Box
+        w="full"
+        maxW="md"
+        px="6"
+        py="8"
+        bg="whiteAlpha.900"
+        borderWidth="1px"
+        boxShadow="lg"
+        rounded="xl"
+        textAlign="center"
+      >
+        <Box mb="4">
+          <Text as="h1" fontSize="6xl" fontWeight="bold" color="gray.900">
+            404
+          </Text>
+          <Text as="h2" fontSize="2xl" fontWeight="semibold" color="gray.700" mt="2">
             Page Not Found
-          </h2>
-        </div>
-        <p className="text-gray-600 mb-6">
+          </Text>
+        </Box>
+        <Text color="gray.600" mb="6">
           The page you are looking for does not exist or has been moved.
-        </p>
-        <Link
-          href="/"
-          className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+        </Text>
+        <ChakraLink
+          asChild
+          display="inline-flex"
+          bg="blue.600"
+          color="white"
+          px="6"
+          py="3"
+          rounded="lg"
+          fontWeight="medium"
+          _hover={{ bg: "blue.700", textDecoration: "none" }}
         >
-          Go Home
-        </Link>
-      </div>
-    </div>
+          <NextLink href="/">Go Home</NextLink>
+        </ChakraLink>
+      </Box>
+    </Center>
   );
 }
