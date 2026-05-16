@@ -25,13 +25,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "CF Next Boilerplate",
-    template: "%s | CF Next Boilerplate",
+    default: "ChakraUI Excel Library Comparison",
+    template: "%s | ChakraUI Excel Library Comparison",
   },
-  description: "Next.js on Cloudflare Workers with D1 and R2",
-  keywords: ["nextjs", "cloudflare", "d1", "r2", "boilerplate"],
-  authors: [{ name: "CF Next Boilerplate" }],
-  creator: "CF Next Boilerplate",
+  description: "Compare Chakra UI spreadsheet and data grid libraries on a shared dataset.",
+  keywords: ["chakra ui", "excel", "data grid", "spreadsheet", "comparison"],
+  authors: [{ name: "ChakraUI Excel Library Comparison" }],
+  creator: "ChakraUI Excel Library Comparison",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
   ),
@@ -39,14 +39,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    siteName: "CF Next Boilerplate",
-    title: "CF Next Boilerplate",
-    description: "Next.js on Cloudflare Workers with D1 and R2",
+    siteName: "ChakraUI Excel Library Comparison",
+    title: "ChakraUI Excel Library Comparison",
+    description: "Compare Chakra UI spreadsheet and data grid libraries on a shared dataset.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CF Next Boilerplate",
-    description: "Next.js on Cloudflare Workers with D1 and R2",
+    title: "ChakraUI Excel Library Comparison",
+    description: "Compare Chakra UI spreadsheet and data grid libraries on a shared dataset.",
   },
   robots: {
     index: true,

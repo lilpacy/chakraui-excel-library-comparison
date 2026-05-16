@@ -1,14 +1,14 @@
 {
-  "name": "cf-next-workers-d1-r2-boilerplate",
+  "name": "chakraui-excel-library-comparison",
   "version": "0.1.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/lilpacy/cloudflare-next-boilerplate.git"
+    "url": "https://github.com/lilpacy/chakraui-excel-library-comparison.git"
   },
-  "homepage": "https://github.com/lilpacy/cloudflare-next-boilerplate",
+  "homepage": "https://github.com/lilpacy/chakraui-excel-library-comparison",
   "bugs": {
-    "url": "https://github.com/lilpacy/cloudflare-next-boilerplate/issues"
+    "url": "https://github.com/lilpacy/chakraui-excel-library-comparison/issues"
   },
   "scripts": {
     "dev": "next dev",

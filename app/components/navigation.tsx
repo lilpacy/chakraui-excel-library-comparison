@@ -49,7 +49,7 @@ export default function Navigation() {
             fontWeight="bold"
             _hover={{ color: "fg", textDecoration: "none" }}
           >
-            <NextLink href="/">CF Next Boilerplate</NextLink>
+            <NextLink href="/">ChakraUI Excel Library Comparison</NextLink>
           </ChakraLink>
 
           <HStack gap="8" display={{ base: "none", md: "flex" }}>

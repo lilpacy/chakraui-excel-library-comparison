@@ -16,10 +16,10 @@ import { getSalesOrders } from "@/lib/db/sales-orders";
 
 export const metadata: Metadata = {
   title: "Home",
-  description: "Next.js + Cloudflare Workers + D1 + R2 Boilerplate",
+  description: "Side-by-side comparison of Chakra UI spreadsheet and data grid libraries.",
   openGraph: {
-    title: "Cloudflare Next.js Boilerplate",
-    description: "Production-ready boilerplate for Next.js on Cloudflare Workers",
+    title: "ChakraUI Excel Library Comparison",
+    description: "Side-by-side comparison of Chakra UI spreadsheet and data grid libraries.",
     type: "website",
   },
 };

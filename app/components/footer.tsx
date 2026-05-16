@@ -50,7 +50,7 @@ export default function Footer() {
           </Link>
         </Text>
         <Text mt="2" fontSize="sm" color="fg.subtle">
-          © {currentYear} CF Next Boilerplate
+          © {currentYear} ChakraUI Excel Library Comparison
         </Text>
       </Container>
     </Box>

@@ -1,8 +1,8 @@
-# Cloudflare Next.js + D1 + R2 Boilerplate
+# ChakraUI Excel Library Comparison
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/lilpacy/cloudflare-next-boilerplate)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/lilpacy/chakraui-excel-library-comparison)
 
-A production-ready boilerplate for building full-stack applications with Next.js 15 on Cloudflare Workers, featuring D1 (SQLite) database, R2 object storage, and Clerk authentication.
+A comparison sandbox for evaluating spreadsheet and data grid libraries built with Chakra UI on top of a shared sales-order dataset.
 
 ## Features
 
@@ -27,8 +27,8 @@ A production-ready boilerplate for building full-stack applications with Next.js
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/lilpacy/cloudflare-next-boilerplate.git
-cd cloudflare-next-boilerplate
+git clone https://github.com/lilpacy/chakraui-excel-library-comparison.git
+cd chakraui-excel-library-comparison
 npm install
 ```
 
