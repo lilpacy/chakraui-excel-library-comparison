@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   Badge,
   Box,
@@ -54,6 +54,12 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
   const [isPending, startTransition] = useTransition();
   const [editingCell, setEditingCell] = useState<EditingCell>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRows(initialRows);
+    setEditingCell(null);
+    setSaveError(null);
+  }, [initialRows]);
 
   function updateRow<K extends ColumnKey>(rowIndex: number, key: K, value: SalesOrderRow[K]) {
     setRows((currentRows) =>
