@@ -6,6 +6,7 @@ import { GlideDataGridSalesTable } from "@/app/components/tables/glide-data-grid
 import { HandsontableSalesTable } from "@/app/components/tables/handsontable";
 import { ReactDataSheetGridSalesTable } from "@/app/components/tables/react-datasheet-grid";
 import { StaticSalesTable } from "@/app/components/tables/static-sales-table";
+import { TanStackSalesTable } from "@/app/components/tables/tanstack-table/index";
 import {
   dataGridBoxProps,
   heroTitleProps,
@@ -119,6 +120,20 @@ export default async function Home() {
 
           <Box {...dataGridBoxProps}>
             <GlideDataGridSalesTable initialRows={salesRows} />
+          </Box>
+
+          <Box>
+            <Text as="h2" {...sectionTitleProps}>
+              TanStack Table + Chakra UI
+            </Text>
+            <Text mt="2" {...sectionDescriptionProps}>
+              A headless TanStack Table instance rendered with the same editable Chakra table
+              markup for DOM comparison.
+            </Text>
+          </Box>
+
+          <Box {...dataGridBoxProps}>
+            <TanStackSalesTable initialRows={salesRows} />
           </Box>
         </VStack>
       </Container>
