@@ -1,20 +1,5 @@
 import { Badge, Table } from "@chakra-ui/react";
-import { salesOrderStatuses } from "@/lib/db/schema";
-
-type SalesOrderStatus = (typeof salesOrderStatuses)[number];
-
-type SalesOrderRow = {
-  orderId: string;
-  orderDate: string;
-  customer: string;
-  region: string;
-  rep: string;
-  category: string;
-  product: string;
-  quantity: number;
-  unitPrice: number;
-  status: SalesOrderStatus;
-};
+import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
 
 type StaticSalesTableProps = {
   rows: SalesOrderRow[];
