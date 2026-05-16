@@ -4,10 +4,12 @@ import { useEffect, useState, useTransition } from "react";
 import {
   Badge,
   Box,
+  Button,
   EditableArea,
   EditableInput,
   EditablePreview,
   EditableRoot,
+  HStack,
   Input,
   Table,
   Text,
@@ -16,7 +18,10 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
   useReactTable,
+  type SortingState,
   type Table as TanStackTable,
 } from "@tanstack/react-table";
 import { updateSalesOrder } from "@/app/actions/sales-orders";
@@ -41,10 +46,14 @@ type ColumnKey = keyof SalesOrderRow;
 type TextColumnKey = Exclude<ColumnKey, "quantity" | "unitPrice" | "status">;
 type NumericColumnKey = Extract<ColumnKey, "quantity" | "unitPrice">;
 
+type TanStackSalesRow = SalesOrderRow & {
+  __rowKey: string;
+};
+
 type EditingCell = {
-  rowIndex: number;
+  rowKey: string;
   column: ColumnKey;
-  originalRow: SalesOrderRow;
+  originalRow: TanStackSalesRow;
 } | null;
 
 type SalesTableColumnMeta = {
@@ -57,17 +66,17 @@ type SalesTableColumnMeta = {
 };
 
 type TanStackSalesTableMeta = {
-  isEditing: (rowIndex: number, column: ColumnKey) => boolean;
-  startEditing: (rowIndex: number, column: ColumnKey) => void;
+  isEditing: (rowKey: string, column: ColumnKey) => boolean;
+  startEditing: (rowKey: string, column: ColumnKey) => void;
   stopEditing: () => void;
-  updateRow: <K extends ColumnKey>(rowIndex: number, key: K, value: SalesOrderRow[K]) => void;
-  commitTextCell: <K extends TextColumnKey>(rowIndex: number, key: K, value: string) => void;
-  commitNumberCell: (rowIndex: number, key: NumericColumnKey, value: number) => void;
-  commitStatusCell: (rowIndex: number, status: SalesOrderStatus) => void;
-  revertCustomEdit: (rowIndex: number) => void;
+  updateRow: <K extends ColumnKey>(rowKey: string, key: K, value: SalesOrderRow[K]) => void;
+  commitTextCell: <K extends TextColumnKey>(rowKey: string, key: K, value: string) => void;
+  commitNumberCell: (rowKey: string, key: NumericColumnKey, value: number) => void;
+  commitStatusCell: (rowKey: string, status: SalesOrderStatus) => void;
+  revertCustomEdit: (rowKey: string) => void;
   handleNumberEditorKeyDown: (
     event: React.KeyboardEvent<HTMLInputElement>,
-    rowIndex: number,
+    rowKey: string,
     key: NumericColumnKey,
   ) => void;
 };
@@ -79,13 +88,35 @@ const currencyFormatter = new Intl.NumberFormat("ja-JP", {
 });
 
 const statusColorPalette: Record<SalesOrderStatus, string> = salesStatusColorPalette;
-const columnHelper = createColumnHelper<SalesOrderRow>();
+const columnHelper = createColumnHelper<TanStackSalesRow>();
 
 function parseNumber(value: string) {
   return value === "" ? 0 : Number(value);
 }
 
-function getTableMeta(table: TanStackTable<SalesOrderRow>) {
+function toTableRows(rows: SalesOrderRow[]): TanStackSalesRow[] {
+  return rows.map((row, index) => ({
+    ...row,
+    __rowKey: `tanstack-row-${index}`,
+  }));
+}
+
+function toSalesOrderRow(row: TanStackSalesRow): SalesOrderRow {
+  return {
+    orderId: row.orderId,
+    orderDate: row.orderDate,
+    customer: row.customer,
+    region: row.region,
+    rep: row.rep,
+    category: row.category,
+    product: row.product,
+    quantity: row.quantity,
+    unitPrice: row.unitPrice,
+    status: row.status,
+  };
+}
+
+function getTableMeta(table: TanStackTable<TanStackSalesRow>) {
   return table.options.meta as TanStackSalesTableMeta;
 }
 
@@ -111,8 +142,10 @@ function createTextColumn(
         <EditableRoot
           {...editableRootStyles}
           defaultValue={value}
-          key={`${key}-${row.original.orderId}-${value}`}
-          onValueCommit={(details) => meta.commitTextCell(row.index, key, details.value)}
+          key={`${key}-${row.original.__rowKey}-${value}`}
+          onValueCommit={(details) =>
+            meta.commitTextCell(row.original.__rowKey, key, details.value)
+          }
         >
           <EditableArea>
             <EditablePreview
@@ -147,7 +180,8 @@ function createNumberColumn(
     } satisfies SalesTableColumnMeta,
     cell: ({ getValue, row, table }) => {
       const meta = getTableMeta(table);
-      const isEditing = meta.isEditing(row.index, key);
+      const rowKey = row.original.__rowKey;
+      const isEditing = meta.isEditing(rowKey, key);
       const value = getValue();
 
       if (isEditing) {
@@ -158,9 +192,9 @@ function createNumberColumn(
             type="number"
             textAlign="end"
             value={value}
-            onBlur={(event) => meta.commitNumberCell(row.index, key, parseNumber(event.target.value))}
-            onChange={(event) => meta.updateRow(row.index, key, parseNumber(event.target.value))}
-            onKeyDown={(event) => meta.handleNumberEditorKeyDown(event, row.index, key)}
+            onBlur={(event) => meta.commitNumberCell(rowKey, key, parseNumber(event.target.value))}
+            onChange={(event) => meta.updateRow(rowKey, key, parseNumber(event.target.value))}
+            onKeyDown={(event) => meta.handleNumberEditorKeyDown(event, rowKey, key)}
           />
         );
       }
@@ -189,9 +223,10 @@ const columns = [
     } satisfies SalesTableColumnMeta,
     cell: ({ getValue, row, table }) => {
       const meta = getTableMeta(table);
+      const rowKey = row.original.__rowKey;
       const value = getValue();
 
-      if (meta.isEditing(row.index, "status")) {
+      if (meta.isEditing(rowKey, "status")) {
         return (
           <Box position="relative">
             <select
@@ -199,10 +234,12 @@ const columns = [
               style={selectFieldStyles}
               value={value}
               onBlur={meta.stopEditing}
-              onChange={(event) => meta.commitStatusCell(row.index, event.target.value as SalesOrderStatus)}
+              onChange={(event) =>
+                meta.commitStatusCell(rowKey, event.target.value as SalesOrderStatus)
+              }
               onKeyDown={(event) => {
                 if (event.key === "Escape") {
-                  meta.revertCustomEdit(row.index);
+                  meta.revertCustomEdit(rowKey);
                 }
               }}
             >
@@ -239,111 +276,163 @@ const columns = [
 export function TanStackSalesTableClient({
   initialRows,
 }: TanStackSalesTableClientProps) {
-  const [rows, setRows] = useState(initialRows);
+  const [rows, setRows] = useState(() => toTableRows(initialRows));
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
   const [isPending, startTransition] = useTransition();
   const [editingCell, setEditingCell] = useState<EditingCell>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
-    setRows(initialRows);
+    setRows(toTableRows(initialRows));
+    setSorting([]);
+    setGlobalFilter("");
     setEditingCell(null);
     setSaveError(null);
   }, [initialRows]);
 
-  function updateRow<K extends ColumnKey>(rowIndex: number, key: K, value: SalesOrderRow[K]) {
+  function findRow(rowKey: string) {
+    return rows.find((row) => row.__rowKey === rowKey);
+  }
+
+  function updateRow<K extends ColumnKey>(rowKey: string, key: K, value: SalesOrderRow[K]) {
     setRows((currentRows) =>
-      currentRows.map((row, index) => (index === rowIndex ? { ...row, [key]: value } : row)),
+      currentRows.map((row) => (row.__rowKey === rowKey ? { ...row, [key]: value } : row)),
     );
   }
 
-  function replaceRow(rowIndex: number, nextRow: SalesOrderRow) {
+  function replaceRow(rowKey: string, nextRow: TanStackSalesRow) {
     setRows((currentRows) =>
-      currentRows.map((row, index) => (index === rowIndex ? nextRow : row)),
+      currentRows.map((row) => (row.__rowKey === rowKey ? nextRow : row)),
     );
   }
 
-  function startEditing(rowIndex: number, column: ColumnKey) {
-    setEditingCell({ rowIndex, column, originalRow: rows[rowIndex] });
+  function startEditing(rowKey: string, column: ColumnKey) {
+    const row = findRow(rowKey);
+
+    if (!row) {
+      return;
+    }
+
+    setEditingCell({ rowKey, column, originalRow: row });
   }
 
   function stopEditing() {
     setEditingCell(null);
   }
 
-  function isEditing(rowIndex: number, column: ColumnKey) {
-    return editingCell?.rowIndex === rowIndex && editingCell.column === column;
+  function isEditing(rowKey: string, column: ColumnKey) {
+    return editingCell?.rowKey === rowKey && editingCell.column === column;
   }
 
-  function persistRowChange(rowIndex: number, previousRow: SalesOrderRow, nextRow: SalesOrderRow) {
-    if (JSON.stringify(previousRow) === JSON.stringify(nextRow)) {
+  function persistRowChange(
+    rowKey: string,
+    previousRow: TanStackSalesRow,
+    nextRow: TanStackSalesRow,
+  ) {
+    const previousValue = JSON.stringify(toSalesOrderRow(previousRow));
+    const nextValue = JSON.stringify(toSalesOrderRow(nextRow));
+
+    if (previousValue === nextValue) {
       stopEditing();
       return;
     }
 
-    replaceRow(rowIndex, nextRow);
+    replaceRow(rowKey, nextRow);
     stopEditing();
     setSaveError(null);
 
     startTransition(async () => {
       try {
-        await updateSalesOrder(previousRow.orderId, nextRow);
+        await updateSalesOrder(previousRow.orderId, toSalesOrderRow(nextRow));
       } catch (error) {
-        replaceRow(rowIndex, previousRow);
+        replaceRow(rowKey, previousRow);
         setSaveError(error instanceof Error ? error.message : "Failed to save sales order");
       }
     });
   }
 
-  function commitTextCell<K extends TextColumnKey>(rowIndex: number, key: K, value: string) {
-    const previousRow = rows[rowIndex];
-    const nextRow = { ...previousRow, [key]: value as SalesOrderRow[K] };
+  function commitTextCell<K extends TextColumnKey>(rowKey: string, key: K, value: string) {
+    const previousRow = findRow(rowKey);
 
-    persistRowChange(rowIndex, previousRow, nextRow);
+    if (!previousRow) {
+      return;
+    }
+
+    const nextRow = { ...previousRow, [key]: value as TanStackSalesRow[K] };
+    persistRowChange(rowKey, previousRow, nextRow);
   }
 
-  function commitNumberCell(rowIndex: number, key: NumericColumnKey, value: number) {
-    const previousRow = editingCell?.rowIndex === rowIndex ? editingCell.originalRow : rows[rowIndex];
-    const nextRow = { ...rows[rowIndex], [key]: value };
+  function commitNumberCell(rowKey: string, key: NumericColumnKey, value: number) {
+    const previousRow = editingCell?.rowKey === rowKey ? editingCell.originalRow : findRow(rowKey);
+    const currentRow = findRow(rowKey);
 
-    persistRowChange(rowIndex, previousRow, nextRow);
-  }
-
-  function commitStatusCell(rowIndex: number, status: SalesOrderStatus) {
-    const previousRow = editingCell?.rowIndex === rowIndex ? editingCell.originalRow : rows[rowIndex];
-    const nextRow = { ...rows[rowIndex], status };
-
-    persistRowChange(rowIndex, previousRow, nextRow);
-  }
-
-  function revertCustomEdit(rowIndex: number) {
-    if (editingCell?.rowIndex !== rowIndex) {
+    if (!previousRow || !currentRow) {
       stopEditing();
       return;
     }
 
-    replaceRow(rowIndex, editingCell.originalRow);
+    const nextRow = { ...currentRow, [key]: value };
+    persistRowChange(rowKey, previousRow, nextRow);
+  }
+
+  function commitStatusCell(rowKey: string, status: SalesOrderStatus) {
+    const previousRow = editingCell?.rowKey === rowKey ? editingCell.originalRow : findRow(rowKey);
+    const currentRow = findRow(rowKey);
+
+    if (!previousRow || !currentRow) {
+      stopEditing();
+      return;
+    }
+
+    const nextRow = { ...currentRow, status };
+    persistRowChange(rowKey, previousRow, nextRow);
+  }
+
+  function revertCustomEdit(rowKey: string) {
+    if (editingCell?.rowKey !== rowKey) {
+      stopEditing();
+      return;
+    }
+
+    replaceRow(rowKey, editingCell.originalRow);
     stopEditing();
   }
 
   function handleNumberEditorKeyDown(
     event: React.KeyboardEvent<HTMLInputElement>,
-    rowIndex: number,
+    rowKey: string,
     key: NumericColumnKey,
   ) {
     if (event.key === "Escape") {
-      revertCustomEdit(rowIndex);
+      revertCustomEdit(rowKey);
       return;
     }
 
     if (event.key === "Enter") {
-      commitNumberCell(rowIndex, key, parseNumber(event.currentTarget.value));
+      commitNumberCell(rowKey, key, parseNumber(event.currentTarget.value));
     }
   }
 
   const table = useReactTable({
     data: rows,
     columns,
+    state: {
+      sorting,
+      globalFilter,
+    },
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getRowId: (row) => row.__rowKey,
+    globalFilterFn: (row, columnId, filterValue) => {
+      const cellValue = row.getValue(columnId);
+      return String(cellValue ?? "")
+        .toLowerCase()
+        .includes(String(filterValue).toLowerCase());
+    },
     meta: {
       isEditing,
       startEditing,
@@ -359,6 +448,18 @@ export function TanStackSalesTableClient({
 
   return (
     <Box className="tanstack-comparison">
+      <HStack mb="4" px="4" pt="4">
+        <Input
+          maxW="sm"
+          placeholder="Filter all columns..."
+          size="sm"
+          value={globalFilter}
+          onChange={(event) => setGlobalFilter(event.target.value)}
+        />
+        <Button size="sm" variant="outline" onClick={() => setGlobalFilter("")}>
+          Clear
+        </Button>
+      </HStack>
       <Table.ScrollArea maxW="100%">
         <Table.Root size="sm" variant="outline">
           <Table.Header>
@@ -366,17 +467,24 @@ export function TanStackSalesTableClient({
               <Table.Row key={headerGroup.id} {...tableHeaderRowProps}>
                 {headerGroup.headers.map((header) => {
                   const meta = header.column.columnDef.meta as SalesTableColumnMeta;
+                  const sortState = header.column.getIsSorted();
 
                   return (
                     <Table.ColumnHeader
                       key={header.id}
                       {...gridCellStyles}
                       {...getSalesTableHeaderCellProps(meta.headerIndex)}
+                      cursor={header.column.getCanSort() ? "pointer" : undefined}
                       textAlign={meta.textAlign}
+                      userSelect="none"
+                      onClick={header.column.getToggleSortingHandler()}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      <HStack gap="2" justify={meta.textAlign === "end" ? "flex-end" : "flex-start"}>
+                        <Text>{flexRender(header.column.columnDef.header, header.getContext())}</Text>
+                        <Text color="fg.subtle" fontSize="xs" minW="3">
+                          {sortState === "asc" ? "▲" : sortState === "desc" ? "▼" : ""}
+                        </Text>
+                      </HStack>
                     </Table.ColumnHeader>
                   );
                 })}
@@ -399,7 +507,7 @@ export function TanStackSalesTableClient({
                       textAlign={meta.textAlign}
                       onDoubleClick={
                         isManualEditCell
-                          ? () => getTableMeta(table).startEditing(tableRow.index, meta.column)
+                          ? () => getTableMeta(table).startEditing(tableRow.original.__rowKey, meta.column)
                           : undefined
                       }
                     >
@@ -412,6 +520,11 @@ export function TanStackSalesTableClient({
           </Table.Body>
         </Table.Root>
       </Table.ScrollArea>
+      {table.getRowModel().rows.length === 0 && (
+        <Text color="fg.muted" fontSize="sm" px="4" py="3">
+          No matching rows.
+        </Text>
+      )}
       {saveError && (
         <Text color="fg.error" fontSize="sm" mt="3">
           {saveError}
