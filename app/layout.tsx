@@ -7,11 +7,15 @@ import "@glideapps/glide-data-grid/dist/index.css";
 import "handsontable/styles/handsontable.min.css";
 import "handsontable/styles/ht-theme-main.min.css";
 import "react-datasheet-grid/dist/style.css";
+import "./styles/globals.scss";
+import "./components/tables/ag-grid/styles.scss";
+import "./components/tables/react-datasheet-grid/styles.scss";
+import "./components/tables/glide-data-grid/styles.scss";
+import "./components/tables/handsontable/styles.scss";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import { Provider } from "./components/ui/provider";
 import Navigation from "./components/navigation";
 import Footer from "./components/footer";
-import "./styles/globals.scss";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
