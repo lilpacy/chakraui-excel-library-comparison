@@ -160,6 +160,12 @@ const statusColorPalette = {
   Pending: "orange",
 } as const;
 
+const gridCellStyles = {
+  borderColor: "gray.200",
+  borderInlineEndWidth: "1px",
+  borderBottomWidth: "1px",
+};
+
 export default function Home() {
   return (
     <Box py={{ base: 12, md: 16 }}>
@@ -186,35 +192,41 @@ export default function Home() {
               <Table.Root size="sm" variant="outline" striped>
                 <Table.Header>
                   <Table.Row bg="gray.50">
-                    <Table.ColumnHeader>Order ID</Table.ColumnHeader>
-                    <Table.ColumnHeader>Date</Table.ColumnHeader>
-                    <Table.ColumnHeader>Customer</Table.ColumnHeader>
-                    <Table.ColumnHeader>Region</Table.ColumnHeader>
-                    <Table.ColumnHeader>Sales Rep</Table.ColumnHeader>
-                    <Table.ColumnHeader>Category</Table.ColumnHeader>
-                    <Table.ColumnHeader>Product</Table.ColumnHeader>
-                    <Table.ColumnHeader textAlign="end">Qty</Table.ColumnHeader>
-                    <Table.ColumnHeader textAlign="end">Unit Price</Table.ColumnHeader>
-                    <Table.ColumnHeader>Status</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Order ID</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Date</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Customer</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Region</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Sales Rep</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Category</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Product</Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles} textAlign="end">
+                      Qty
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles} textAlign="end">
+                      Unit Price
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader {...gridCellStyles}>Status</Table.ColumnHeader>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                   {sampleRows.map((row) => (
                     <Table.Row key={row.orderId}>
-                      <Table.Cell fontFamily="mono" fontSize="xs">
+                      <Table.Cell {...gridCellStyles} fontFamily="mono" fontSize="xs">
                         {row.orderId}
                       </Table.Cell>
-                      <Table.Cell>{row.date}</Table.Cell>
-                      <Table.Cell>{row.customer}</Table.Cell>
-                      <Table.Cell>{row.region}</Table.Cell>
-                      <Table.Cell>{row.rep}</Table.Cell>
-                      <Table.Cell>{row.category}</Table.Cell>
-                      <Table.Cell>{row.product}</Table.Cell>
-                      <Table.Cell textAlign="end">{row.quantity}</Table.Cell>
-                      <Table.Cell textAlign="end">
+                      <Table.Cell {...gridCellStyles}>{row.date}</Table.Cell>
+                      <Table.Cell {...gridCellStyles}>{row.customer}</Table.Cell>
+                      <Table.Cell {...gridCellStyles}>{row.region}</Table.Cell>
+                      <Table.Cell {...gridCellStyles}>{row.rep}</Table.Cell>
+                      <Table.Cell {...gridCellStyles}>{row.category}</Table.Cell>
+                      <Table.Cell {...gridCellStyles}>{row.product}</Table.Cell>
+                      <Table.Cell {...gridCellStyles} textAlign="end">
+                        {row.quantity}
+                      </Table.Cell>
+                      <Table.Cell {...gridCellStyles} textAlign="end">
                         {currencyFormatter.format(row.unitPrice)}
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell {...gridCellStyles}>
                         <Badge colorPalette={statusColorPalette[row.status]} variant="subtle">
                           {row.status}
                         </Badge>
