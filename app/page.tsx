@@ -1,6 +1,6 @@
-// app/page.tsx
 import type { Metadata } from "next";
 import { Badge, Box, Container, Table, Text, VStack } from "@chakra-ui/react";
+import { EditableSalesTable } from "@/app/components/editable-sales-table";
 import { getSalesOrders } from "@/lib/db/sales-orders";
 import { salesOrderStatuses } from "@/lib/db/schema";
 
@@ -50,6 +50,15 @@ export default async function Home() {
             <Text mt="3" maxW="3xl" color="gray.600" fontSize={{ base: "md", md: "lg" }}>
               A concrete 10x10 dataset for a food-service wholesaler. This makes it easier to
               imagine sorting by region, filtering by status, or comparing pricing and quantities.
+            </Text>
+          </Box>
+
+          <Box>
+            <Text as="h2" fontSize={{ base: "xl", md: "2xl" }} fontWeight="semibold">
+              Static Table
+            </Text>
+            <Text mt="2" color="gray.600">
+              The original display-only table.
             </Text>
           </Box>
 
@@ -108,6 +117,25 @@ export default async function Home() {
                 </Table.Body>
               </Table.Root>
             </Table.ScrollArea>
+          </Box>
+
+          <Box>
+            <Text as="h2" fontSize={{ base: "xl", md: "2xl" }} fontWeight="semibold">
+              Editable Table
+            </Text>
+            <Text mt="2" color="gray.600">
+              A second table that renders inputs in each body cell for DOM comparison.
+            </Text>
+          </Box>
+
+          <Box
+            borderWidth="1px"
+            rounded="xl"
+            bg="whiteAlpha.900"
+            boxShadow="sm"
+            overflow="hidden"
+          >
+            <EditableSalesTable initialRows={salesRows} />
           </Box>
         </VStack>
       </Container>

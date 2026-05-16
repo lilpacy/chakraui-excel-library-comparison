@@ -1,0 +1,175 @@
+"use client";
+
+import { useState } from "react";
+import { Input, NativeSelect, Table } from "@chakra-ui/react";
+import { salesOrderStatuses } from "@/lib/db/schema";
+
+type SalesOrderStatus = (typeof salesOrderStatuses)[number];
+
+type SalesOrderRow = {
+  orderId: string;
+  orderDate: string;
+  customer: string;
+  region: string;
+  rep: string;
+  category: string;
+  product: string;
+  quantity: number;
+  unitPrice: number;
+  status: SalesOrderStatus;
+};
+
+type EditableSalesTableProps = {
+  initialRows: SalesOrderRow[];
+};
+
+const gridCellStyles = {
+  borderColor: "gray.200",
+  borderInlineEndWidth: "1px",
+  borderBottomWidth: "1px",
+};
+
+const inputStyles = {
+  variant: "subtle" as const,
+  size: "sm" as const,
+  bg: "transparent",
+  border: "none",
+  borderRadius: "none",
+  minW: "max-content",
+};
+
+export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
+  const [rows, setRows] = useState(initialRows);
+
+  function updateRow<K extends keyof SalesOrderRow>(
+    orderId: string,
+    key: K,
+    value: SalesOrderRow[K],
+  ) {
+    setRows((currentRows) =>
+      currentRows.map((row) => (row.orderId === orderId ? { ...row, [key]: value } : row)),
+    );
+  }
+
+  return (
+    <Table.ScrollArea maxW="100%">
+      <Table.Root size="sm" variant="outline" striped>
+        <Table.Header>
+          <Table.Row bg="gray.50">
+            <Table.ColumnHeader {...gridCellStyles}>Order ID</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles}>Date</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles}>Customer</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles}>Region</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles}>Sales Rep</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles}>Category</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles}>Product</Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} textAlign="end">
+              Qty
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles} textAlign="end">
+              Unit Price
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...gridCellStyles}>Status</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {rows.map((row) => (
+            <Table.Row key={row.orderId}>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  value={row.orderId}
+                  onChange={(event) => updateRow(row.orderId, "orderId", event.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  value={row.orderDate}
+                  onChange={(event) => updateRow(row.orderId, "orderDate", event.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  value={row.customer}
+                  onChange={(event) => updateRow(row.orderId, "customer", event.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  value={row.region}
+                  onChange={(event) => updateRow(row.orderId, "region", event.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  value={row.rep}
+                  onChange={(event) => updateRow(row.orderId, "rep", event.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  value={row.category}
+                  onChange={(event) => updateRow(row.orderId, "category", event.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  value={row.product}
+                  onChange={(event) => updateRow(row.orderId, "product", event.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  type="number"
+                  textAlign="end"
+                  value={row.quantity}
+                  onChange={(event) =>
+                    updateRow(row.orderId, "quantity", Number(event.target.value))
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <Input
+                  {...inputStyles}
+                  type="number"
+                  textAlign="end"
+                  value={row.unitPrice}
+                  onChange={(event) =>
+                    updateRow(row.orderId, "unitPrice", Number(event.target.value))
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles} p="0">
+                <NativeSelect.Root size="sm" variant="subtle">
+                  <NativeSelect.Field
+                    bg="transparent"
+                    border="none"
+                    borderRadius="none"
+                    value={row.status}
+                    onChange={(event) =>
+                      updateRow(row.orderId, "status", event.target.value as SalesOrderStatus)
+                    }
+                  >
+                    {salesOrderStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+    </Table.ScrollArea>
+  );
+}
