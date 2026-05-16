@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Box, Input, Table } from "@chakra-ui/react";
+import {
+  Badge,
+  Box,
+  EditableInput,
+  EditablePreview,
+  EditableRoot,
+  Input,
+  Table,
+} from "@chakra-ui/react";
 import { salesOrderStatuses } from "@/lib/db/schema";
 import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
 
@@ -68,6 +76,19 @@ const selectFieldStyles = {
   width: "100%",
 };
 
+const editableRootStyles = {
+  activationMode: "dblclick" as const,
+  submitMode: "both" as const,
+  selectOnFocus: true,
+  unstyled: true,
+};
+
+const previewStyles = {
+  unstyled: true,
+  cursor: "text",
+  display: "block",
+};
+
 function parseNumber(value: string) {
   return value === "" ? 0 : Number(value);
 }
@@ -100,6 +121,14 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
     }
   }
 
+  function commitTextCell<K extends keyof SalesOrderRow>(
+    rowIndex: number,
+    key: K,
+    value: string,
+  ) {
+    updateRow(rowIndex, key, value as SalesOrderRow[K]);
+  }
+
   return (
     <Table.ScrollArea maxW="100%">
       <Table.Root size="sm" variant="outline" striped>
@@ -124,128 +153,83 @@ export function EditableSalesTable({ initialRows }: EditableSalesTableProps) {
         <Table.Body>
           {rows.map((row, rowIndex) => (
             <Table.Row key={`${row.orderId}-${rowIndex}`}>
-              <Table.Cell
-                {...gridCellStyles}
-                fontFamily="mono"
-                fontSize="xs"
-                onDoubleClick={() => startEditing(rowIndex, "orderId")}
-              >
-                {isEditing(rowIndex, "orderId") ? (
-                  <Input
-                    {...inputStyles}
-                    autoFocus
+              <Table.Cell {...gridCellStyles} fontFamily="mono" fontSize="xs">
+                <EditableRoot
+                  {...editableRootStyles}
+                  defaultValue={row.orderId}
+                  onValueCommit={(details) => commitTextCell(rowIndex, "orderId", details.value)}
+                >
+                  <EditablePreview
+                    {...previewStyles}
                     fontFamily="mono"
                     fontSize="xs"
-                    value={row.orderId}
-                    onBlur={stopEditing}
-                    onChange={(event) => updateRow(rowIndex, "orderId", event.target.value)}
-                    onKeyDown={handleEditorKeyDown}
                   />
-                ) : (
-                  row.orderId
-                )}
-              </Table.Cell>
-              <Table.Cell
-                {...gridCellStyles}
-                onDoubleClick={() => startEditing(rowIndex, "orderDate")}
-              >
-                {isEditing(rowIndex, "orderDate") ? (
-                  <Input
+                  <EditableInput
                     {...inputStyles}
-                    autoFocus
-                    value={row.orderDate}
-                    onBlur={stopEditing}
-                    onChange={(event) => updateRow(rowIndex, "orderDate", event.target.value)}
-                    onKeyDown={handleEditorKeyDown}
+                    fontFamily="mono"
+                    fontSize="xs"
                   />
-                ) : (
-                  row.orderDate
-                )}
+                </EditableRoot>
               </Table.Cell>
-              <Table.Cell
-                {...gridCellStyles}
-                onDoubleClick={() => startEditing(rowIndex, "customer")}
-              >
-                {isEditing(rowIndex, "customer") ? (
-                  <Input
-                    {...inputStyles}
-                    autoFocus
-                    value={row.customer}
-                    onBlur={stopEditing}
-                    onChange={(event) => updateRow(rowIndex, "customer", event.target.value)}
-                    onKeyDown={handleEditorKeyDown}
-                  />
-                ) : (
-                  row.customer
-                )}
+              <Table.Cell {...gridCellStyles}>
+                <EditableRoot
+                  {...editableRootStyles}
+                  defaultValue={row.orderDate}
+                  onValueCommit={(details) => commitTextCell(rowIndex, "orderDate", details.value)}
+                >
+                  <EditablePreview {...previewStyles} />
+                  <EditableInput {...inputStyles} />
+                </EditableRoot>
               </Table.Cell>
-              <Table.Cell
-                {...gridCellStyles}
-                onDoubleClick={() => startEditing(rowIndex, "region")}
-              >
-                {isEditing(rowIndex, "region") ? (
-                  <Input
-                    {...inputStyles}
-                    autoFocus
-                    value={row.region}
-                    onBlur={stopEditing}
-                    onChange={(event) => updateRow(rowIndex, "region", event.target.value)}
-                    onKeyDown={handleEditorKeyDown}
-                  />
-                ) : (
-                  row.region
-                )}
+              <Table.Cell {...gridCellStyles}>
+                <EditableRoot
+                  {...editableRootStyles}
+                  defaultValue={row.customer}
+                  onValueCommit={(details) => commitTextCell(rowIndex, "customer", details.value)}
+                >
+                  <EditablePreview {...previewStyles} />
+                  <EditableInput {...inputStyles} />
+                </EditableRoot>
               </Table.Cell>
-              <Table.Cell
-                {...gridCellStyles}
-                onDoubleClick={() => startEditing(rowIndex, "rep")}
-              >
-                {isEditing(rowIndex, "rep") ? (
-                  <Input
-                    {...inputStyles}
-                    autoFocus
-                    value={row.rep}
-                    onBlur={stopEditing}
-                    onChange={(event) => updateRow(rowIndex, "rep", event.target.value)}
-                    onKeyDown={handleEditorKeyDown}
-                  />
-                ) : (
-                  row.rep
-                )}
+              <Table.Cell {...gridCellStyles}>
+                <EditableRoot
+                  {...editableRootStyles}
+                  defaultValue={row.region}
+                  onValueCommit={(details) => commitTextCell(rowIndex, "region", details.value)}
+                >
+                  <EditablePreview {...previewStyles} />
+                  <EditableInput {...inputStyles} />
+                </EditableRoot>
               </Table.Cell>
-              <Table.Cell
-                {...gridCellStyles}
-                onDoubleClick={() => startEditing(rowIndex, "category")}
-              >
-                {isEditing(rowIndex, "category") ? (
-                  <Input
-                    {...inputStyles}
-                    autoFocus
-                    value={row.category}
-                    onBlur={stopEditing}
-                    onChange={(event) => updateRow(rowIndex, "category", event.target.value)}
-                    onKeyDown={handleEditorKeyDown}
-                  />
-                ) : (
-                  row.category
-                )}
+              <Table.Cell {...gridCellStyles}>
+                <EditableRoot
+                  {...editableRootStyles}
+                  defaultValue={row.rep}
+                  onValueCommit={(details) => commitTextCell(rowIndex, "rep", details.value)}
+                >
+                  <EditablePreview {...previewStyles} />
+                  <EditableInput {...inputStyles} />
+                </EditableRoot>
               </Table.Cell>
-              <Table.Cell
-                {...gridCellStyles}
-                onDoubleClick={() => startEditing(rowIndex, "product")}
-              >
-                {isEditing(rowIndex, "product") ? (
-                  <Input
-                    {...inputStyles}
-                    autoFocus
-                    value={row.product}
-                    onBlur={stopEditing}
-                    onChange={(event) => updateRow(rowIndex, "product", event.target.value)}
-                    onKeyDown={handleEditorKeyDown}
-                  />
-                ) : (
-                  row.product
-                )}
+              <Table.Cell {...gridCellStyles}>
+                <EditableRoot
+                  {...editableRootStyles}
+                  defaultValue={row.category}
+                  onValueCommit={(details) => commitTextCell(rowIndex, "category", details.value)}
+                >
+                  <EditablePreview {...previewStyles} />
+                  <EditableInput {...inputStyles} />
+                </EditableRoot>
+              </Table.Cell>
+              <Table.Cell {...gridCellStyles}>
+                <EditableRoot
+                  {...editableRootStyles}
+                  defaultValue={row.product}
+                  onValueCommit={(details) => commitTextCell(rowIndex, "product", details.value)}
+                >
+                  <EditablePreview {...previewStyles} />
+                  <EditableInput {...inputStyles} />
+                </EditableRoot>
               </Table.Cell>
               <Table.Cell
                 {...gridCellStyles}
