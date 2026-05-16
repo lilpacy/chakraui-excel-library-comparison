@@ -9,85 +9,82 @@
  * - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: Your GA4 measurement ID (optional)
  */
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "chakraui-excel-library-comparison",
-	"build": {
-		"command": "npx opennextjs-cloudflare build"
-	},
-	"main": ".open-next/worker.js",
-	"compatibility_date": "2025-03-01",
-	"compatibility_flags": [
-		"nodejs_compat",
-		"global_fetch_strictly_public"
-	],
-	"workers_dev": true,
-	"preview_urls": true,
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "ASSETS"
-	},
-	"services": [
-		{
-			"binding": "WORKER_SELF_REFERENCE",
-			"service": "chakraui-excel-library-comparison"
-		}
-	],
-	// Default/production bindings
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "chakraui-excel-library-comparison-db",
-			"database_id": "96e41a53-c5c8-4e95-b939-c5627ff75e39",
-			"migrations_dir": "drizzle"
-		}
-	],
-	"r2_buckets": [
-		{
-			"binding": "NEXT_INC_CACHE_R2_BUCKET",
-			"bucket_name": "chakraui-excel-library-comparison-cache"
-		}
-	],
-	"vars": {
-		"ENV_NAME": "production",
-		"NEXT_PUBLIC_BASE_URL": "https://your-domain.com",
-		"NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": ""
-	},
-	// Environment-specific overrides
-	"env": {
-		"preview": {
-			"services": [
-				{
-					"binding": "WORKER_SELF_REFERENCE",
-					"service": "chakraui-excel-library-comparison-preview"
-				}
-			],
-			"d1_databases": [
-				{
-					"binding": "DB",
-					"database_name": "chakraui-excel-library-comparison-db-preview",
-					"database_id": "0af8b833-fdfc-4ff3-b776-3a7b15b21aa8",
-					"migrations_dir": "drizzle"
-				}
-			],
-			"r2_buckets": [
-				{
-					"binding": "NEXT_INC_CACHE_R2_BUCKET",
-					"bucket_name": "chakraui-excel-library-comparison-cache-preview"
-				}
-			],
-			"vars": {
-				"ENV_NAME": "preview"
-			}
-		}
-	},
-	"observability": {
-		"enabled": false,
-		"head_sampling_rate": 1,
-		"logs": {
-			"enabled": true,
-			"head_sampling_rate": 1,
-			"persist": true,
-			"invocation_logs": true
-		}
-	}
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chakraui-excel-library-comparison",
+  "build": {
+    "command": "npx opennextjs-cloudflare build",
+  },
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-03-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "chakraui-excel-library-comparison",
+    },
+  ],
+  // Default/production bindings
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "chakraui-excel-library-comparison-db",
+      "database_id": "96e41a53-c5c8-4e95-b939-c5627ff75e39",
+      "migrations_dir": "drizzle",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "chakraui-excel-library-comparison-cache",
+    },
+  ],
+  "vars": {
+    "ENV_NAME": "production",
+    "NEXT_PUBLIC_BASE_URL": "https://chakraui-excel-library-comparison.lilpacy.workers.dev",
+    "NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": "",
+  },
+  // Environment-specific overrides
+  "env": {
+    "preview": {
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "chakraui-excel-library-comparison-preview",
+        },
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "chakraui-excel-library-comparison-db-preview",
+          "database_id": "0af8b833-fdfc-4ff3-b776-3a7b15b21aa8",
+          "migrations_dir": "drizzle",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "NEXT_INC_CACHE_R2_BUCKET",
+          "bucket_name": "chakraui-excel-library-comparison-cache-preview",
+        },
+      ],
+      "vars": {
+        "ENV_NAME": "preview",
+      },
+    },
+  },
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true,
+    },
+  },
 }
