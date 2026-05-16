@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { memo, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Box, Text } from "@chakra-ui/react";
 import {
   DataSheetGrid,
@@ -8,6 +8,7 @@ import {
   intColumn,
   keyColumn,
   textColumn,
+  type CellProps,
   type Column,
 } from "react-datasheet-grid";
 import type { Operation } from "react-datasheet-grid/dist/types";
@@ -30,8 +31,12 @@ type GridRow = {
   product: string | null;
   quantity: number | null;
   unitPrice: number | null;
-  status: string | null;
+  status: SalesOrderStatus;
   __rowKey: string;
+};
+
+type StatusColumnData = {
+  choices: readonly SalesOrderStatus[];
 };
 
 const gridHeight = 442;
@@ -61,6 +66,40 @@ function coerceStatus(value: unknown): SalesOrderStatus {
     : "Pending";
 }
 
+const StatusCell = memo(function StatusCell({
+  rowData,
+  setRowData,
+  focus,
+  disabled,
+  columnData,
+  stopEditing,
+}: CellProps<SalesOrderStatus, StatusColumnData>) {
+  return (
+    <div className="rdsg-select-cell">
+      <select
+        className="dsg-input rdsg-select-input"
+        disabled={disabled}
+        value={rowData}
+        style={{ pointerEvents: focus ? undefined : "none" }}
+        onBlur={() => stopEditing({ nextRow: false })}
+        onChange={(event) => {
+          setRowData(coerceStatus(event.target.value));
+          stopEditing({ nextRow: false });
+        }}
+      >
+        {columnData.choices.map((status) => (
+          <option key={status} value={status}>
+            {status}
+          </option>
+        ))}
+      </select>
+      <span aria-hidden="true" className="rdsg-select-indicator">
+        ▾
+      </span>
+    </div>
+  );
+});
+
 function toSalesOrderRow(row: GridRow): SalesOrderRow {
   return {
     orderId: String(row.orderId ?? ""),
@@ -72,7 +111,7 @@ function toSalesOrderRow(row: GridRow): SalesOrderRow {
     product: String(row.product ?? ""),
     quantity: parseNumber(row.quantity),
     unitPrice: parseNumber(row.unitPrice),
-    status: coerceStatus(row.status),
+    status: row.status,
   };
 }
 
@@ -111,6 +150,17 @@ export function ReactDataSheetGridSalesTableClient({
         return digitsOnly === "" ? null : parseNumber(digitsOnly);
       },
     });
+
+    const statusColumn: Partial<Column<SalesOrderStatus, StatusColumnData, string>> = {
+      component: StatusCell,
+      columnData: { choices: salesOrderStatuses },
+      disableKeys: true,
+      keepFocus: false,
+      deleteValue: ({ rowData }) => rowData,
+      copyValue: ({ rowData }) => rowData,
+      pasteValue: ({ value }) => coerceStatus(value),
+      isCellEmpty: () => false,
+    };
 
     return [
       {
@@ -196,7 +246,7 @@ export function ReactDataSheetGridSalesTableClient({
         grow: 0,
       },
       {
-        ...keyColumn<GridRow, "status">("status", textColumn),
+        ...keyColumn<GridRow, "status">("status", statusColumn),
         id: "status",
         title: "Status",
         headerClassName: "rdsg-header-tone rdsg-header-tone--magenta",

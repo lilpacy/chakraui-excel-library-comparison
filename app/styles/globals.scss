@@ -284,6 +284,31 @@ body {
   text-align: end;
 }
 
+.react-datasheet-grid-comparison .rdsg-select-cell {
+  position: relative;
+  height: 100%;
+}
+
+.react-datasheet-grid-comparison .rdsg-select-input {
+  appearance: none;
+  cursor: pointer;
+  padding-inline-end: 24px;
+}
+
+.react-datasheet-grid-comparison .rdsg-select-input:disabled {
+  cursor: default;
+}
+
+.react-datasheet-grid-comparison .rdsg-select-indicator {
+  position: absolute;
+  inset-inline-end: 8px;
+  top: 50%;
+  pointer-events: none;
+  color: var(--ds-color-fg-subtle);
+  font-size: 0.75rem;
+  transform: translateY(-50%);
+}
+
 .react-datasheet-grid-comparison .dsg-active-cell {
   box-shadow: none;
 }
