@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Box, Container, Text, VStack } from "@chakra-ui/react";
 import { EditableSalesTable } from "@/app/components/tables/editable-sales-table";
-import { HandsontableSalesTable } from "@/app/components/tables/handsontable-sales-table";
+import { HandsontableSalesTable } from "@/app/components/tables/handsontable";
 import { StaticSalesTable } from "@/app/components/tables/static-sales-table";
 import {
   dataGridBoxProps,
