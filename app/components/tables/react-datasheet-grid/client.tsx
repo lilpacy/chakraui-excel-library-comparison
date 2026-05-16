@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Box, Text } from "@chakra-ui/react";
 import {
   DataSheetGrid,
+  createTextColumn,
   intColumn,
   keyColumn,
   textColumn,
@@ -34,6 +35,13 @@ type GridRow = {
 };
 
 const gridHeight = 442;
+const gridRowHeight = 38;
+
+const currencyFormatter = new Intl.NumberFormat("ja-JP", {
+  style: "currency",
+  currency: "JPY",
+  maximumFractionDigits: 0,
+});
 
 function toGridRows(rows: SalesOrderRow[]): GridRow[] {
   return rows.map((row, index) => ({
@@ -80,11 +88,28 @@ export function ReactDataSheetGridSalesTableClient({
   }, [initialRows]);
 
   const columns = useMemo<Column<GridRow>[]>(() => {
+    const currencyColumn = createTextColumn<number | null>({
+      alignRight: true,
+      parseUserInput: (value) => {
+        const digitsOnly = value.replace(/[^\d-]/g, "");
+        return digitsOnly === "" ? null : parseNumber(digitsOnly);
+      },
+      formatBlurredInput: (value) =>
+        typeof value === "number" ? currencyFormatter.format(value) : "",
+      formatInputOnFocus: (value) => (typeof value === "number" ? String(value) : ""),
+      formatForCopy: (value) => (typeof value === "number" ? String(value) : ""),
+      parsePastedValue: (value) => {
+        const digitsOnly = value.replace(/[^\d-]/g, "");
+        return digitsOnly === "" ? null : parseNumber(digitsOnly);
+      },
+    });
+
     return [
       {
         ...keyColumn<GridRow, "orderId">("orderId", textColumn),
         id: "orderId",
         title: "Order ID",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--blue",
         minWidth: 118,
         basis: 118,
         grow: 0,
@@ -94,6 +119,7 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "orderDate">("orderDate", textColumn),
         id: "orderDate",
         title: "Date",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--yellow",
         minWidth: 120,
         basis: 120,
       },
@@ -101,6 +127,7 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "customer">("customer", textColumn),
         id: "customer",
         title: "Customer",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--green",
         minWidth: 205,
         basis: 205,
       },
@@ -108,6 +135,7 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "region">("region", textColumn),
         id: "region",
         title: "Region",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--fuchsia",
         minWidth: 120,
         basis: 120,
       },
@@ -115,6 +143,7 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "rep">("rep", textColumn),
         id: "rep",
         title: "Sales Rep",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--aqua",
         minWidth: 160,
         basis: 160,
       },
@@ -122,6 +151,7 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "category">("category", textColumn),
         id: "category",
         title: "Category",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--orange",
         minWidth: 145,
         basis: 145,
       },
@@ -129,6 +159,7 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "product">("product", textColumn),
         id: "product",
         title: "Product",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--iris",
         minWidth: 220,
         basis: 220,
       },
@@ -136,14 +167,16 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "quantity">("quantity", intColumn),
         id: "quantity",
         title: "Qty",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--red rdsg-header-tone--numeric",
         minWidth: 92,
         basis: 92,
         grow: 0,
       },
       {
-        ...keyColumn<GridRow, "unitPrice">("unitPrice", intColumn),
+        ...keyColumn<GridRow, "unitPrice">("unitPrice", currencyColumn),
         id: "unitPrice",
         title: "Unit Price",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--lime rdsg-header-tone--numeric",
         minWidth: 120,
         basis: 120,
         grow: 0,
@@ -152,6 +185,7 @@ export function ReactDataSheetGridSalesTableClient({
         ...keyColumn<GridRow, "status">("status", textColumn),
         id: "status",
         title: "Status",
+        headerClassName: "rdsg-header-tone rdsg-header-tone--magenta",
         minWidth: 140,
         basis: 140,
         grow: 0,
@@ -211,17 +245,19 @@ export function ReactDataSheetGridSalesTableClient({
   }
 
   return (
-    <Box className="react-datasheet-grid-comparison">
+    <Box className={`${designSystemClassNames.dataGrid} react-datasheet-grid-comparison`}>
       <DataSheetGrid<GridRow>
         value={rows}
         onChange={handleChange}
-      columns={columns}
-      rowKey="__rowKey"
-      height={gridHeight}
-      gutterColumn={false}
-      lockRows
-      disableContextMenu
-      autoAddRow={false}
+        columns={columns}
+        rowKey="__rowKey"
+        height={gridHeight}
+        rowHeight={gridRowHeight}
+        headerRowHeight={gridRowHeight}
+        gutterColumn={false}
+        lockRows
+        disableContextMenu
+        autoAddRow={false}
         addRowsComponent={false}
       />
       {(isPending || saveError) && (
