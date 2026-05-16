@@ -306,7 +306,8 @@ const globalCss = defineGlobalStyles({
     minHeight: "100vh",
     backgroundColor: "var(--ds-color-bg-canvas)",
     backgroundImage:
-      "radial-gradient(circle at top left, color-mix(in srgb, var(--ds-color-brand) 12%, transparent) 0, transparent 34%), linear-gradient(180deg, var(--ds-color-bg-canvas) 0%, color-mix(in srgb, var(--ds-color-bg-panel) 72%, var(--ds-color-bg-canvas)) 100%)",
+      'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAAAsSAAALEgHS3X78AAAAG3RFWHRTb2Z0d2FyZQBDZWxzeXMgU3R1ZGlvIFRvb2zBp+F8AAAAaklEQVRYw+3SOwqAUAxE0YyCP5773+cDwUbGRkTQxkZT3FSBNIeZaF2qI9FoXar7oUQ0SgSa5tvBjpASgdIkZG8htcfu0Mcx5U3or595BHVjOau51kRlgAABAgQIECBAgAABAgQIEKC3swOGHZ93/K3/jwAAAABJRU5ErkJggg==")',
+    backgroundRepeat: "repeat",
     color: "fg",
     fontFamily: "body",
     transitionProperty: "background-color, color, border-color",
