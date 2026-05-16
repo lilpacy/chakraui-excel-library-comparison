@@ -361,6 +361,29 @@ const globalCss = defineGlobalStyles({
     borderColor: "var(--ds-color-status-warning-border)",
     color: "var(--ds-color-status-warning-fg)",
   },
+  ".ds-sales-status-badge": {
+    display: "inline-flex",
+    alignItems: "center",
+    minHeight: "20px",
+    paddingInline: "6px",
+    borderRadius: "var(--ds-radius-sm)",
+    fontSize: "var(--ds-font-size-xs)",
+    lineHeight: "var(--ds-line-height-xs)",
+    fontWeight: "500",
+    whiteSpace: "nowrap",
+  },
+  ".ds-sales-status-badge[data-tone='green']": {
+    backgroundColor: "var(--ds-color-accent-green-bg)",
+    color: "var(--ds-color-accent-green-fg)",
+  },
+  ".ds-sales-status-badge[data-tone='blue']": {
+    backgroundColor: "var(--ds-color-accent-blue-bg)",
+    color: "var(--ds-color-accent-blue-fg)",
+  },
+  ".ds-sales-status-badge[data-tone='orange']": {
+    backgroundColor: "var(--ds-color-accent-orange-bg)",
+    color: "var(--ds-color-accent-orange-fg)",
+  },
   ".handsontable-comparison": {
     "--ht-font-family": "var(--ds-font-family-body)",
     "--ht-font-size": "var(--ds-font-size-sm)",
@@ -384,6 +407,8 @@ const globalCss = defineGlobalStyles({
     "--ht-header-row-active-background-color": "var(--ds-color-bg-muted)",
     "--ht-header-active-foreground-color": "var(--ds-color-fg-primary)",
     "--ht-header-row-active-foreground-color": "var(--ds-color-fg-primary)",
+    "--ht-row-cell-odd-background-color": "var(--ds-color-bg-subtle)",
+    "--ht-row-cell-even-background-color": "var(--ds-color-bg-panel)",
     "--ht-input-background-color": "var(--ds-color-bg-panel)",
     "--ht-input-foreground-color": "var(--ds-color-fg-primary)",
     "--ht-input-border-color": "var(--ds-color-border-emphasized)",
@@ -394,19 +419,48 @@ const globalCss = defineGlobalStyles({
     "--ht-link-color": "var(--ds-color-link)",
     "--ht-link-hover-color": "var(--ds-color-link-hover)",
     "--ht-accent-color": "var(--ds-color-brand)",
+    "--ht-wrapper-border-width": "0px",
+    "--ht-wrapper-border-radius": "0px",
     "--ht-button-border-radius": "var(--ds-radius-md)",
     "--ht-input-border-radius": "var(--ds-radius-md)",
     "--ht-dialog-content-border-radius": "var(--ds-radius-lg)",
     "--ht-menu-border-radius": "var(--ds-radius-lg)",
-    "--ht-cell-horizontal-padding": "var(--ds-space-3)",
+    "--ht-cell-horizontal-padding": "var(--ds-space-2)",
     "--ht-cell-vertical-padding": "var(--ds-space-2)",
     "--ht-bar-horizontal-padding": "var(--ds-space-3)",
     "--ht-bar-vertical-padding": "var(--ds-space-2)",
+  },
+  ".handsontable-comparison .handsontable": {
+    backgroundColor: "var(--ds-color-bg-panel)",
   },
   ".handsontable-comparison .handsontable td, .handsontable-comparison .handsontable th": {
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
+  },
+  ".handsontable-comparison .handsontable thead th .relative": {
+    paddingInline: "var(--ds-space-2)",
+    paddingBlock: "var(--ds-space-2)",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header": {
+    textAlign: "start",
+  },
+  ".handsontable-comparison .handsontable th.ds-ht-column-header--numeric": {
+    textAlign: "end",
+  },
+  ".handsontable-comparison .handsontable td.ds-ht-cell--order-id": {
+    fontFamily: "var(--ds-font-family-mono)",
+    fontSize: "var(--ds-font-size-xs)",
+    lineHeight: "var(--ds-line-height-xs)",
+  },
+  ".handsontable-comparison .handsontable td.ds-ht-cell--numeric": {
+    fontVariantNumeric: "tabular-nums",
+  },
+  ".handsontable-comparison .handsontable td.ds-ht-cell--status": {
+    paddingBlock: "var(--ds-space-2)",
+  },
+  ".handsontable-comparison .handsontable td.ds-ht-cell--status .htAutocompleteArrow": {
+    display: "none",
   },
 });
 

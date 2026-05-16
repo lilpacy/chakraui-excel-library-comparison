@@ -4,11 +4,15 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Box, Text } from "@chakra-ui/react";
 import { HotTable, type HotTableRef } from "@handsontable/react-wrapper";
 import type { CellChange } from "handsontable/common";
-import type { ColumnSettings } from "handsontable/settings";
+import { textRenderer } from "handsontable/renderers/textRenderer";
 import { registerAllModules } from "handsontable/registry";
 import { updateSalesOrder } from "@/app/actions/sales-orders";
-import { designSystemClassNames } from "@/app/design-system/patterns";
+import {
+  designSystemClassNames,
+  salesStatusColorPalette,
+} from "@/app/design-system/patterns";
 import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
+import type { CellProperties, ColumnSettings } from "handsontable/settings";
 import { salesOrderStatuses } from "@/lib/db/schema";
 
 registerAllModules();
@@ -18,6 +22,7 @@ type HandsontableSalesTableClientProps = {
 };
 
 type ColumnKey = keyof SalesOrderRow;
+type HandsontableCore = Parameters<typeof textRenderer>[0];
 
 const columnKeys: ColumnKey[] = [
   "orderId",
@@ -45,25 +50,62 @@ const colHeaders = [
   "Status",
 ];
 
+function salesStatusRenderer(
+  instance: HandsontableCore,
+  td: HTMLTableCellElement,
+  row: number,
+  column: number,
+  prop: string | number,
+  value: unknown,
+  cellProperties: CellProperties,
+) {
+  textRenderer(instance, td, row, column, prop, value, cellProperties);
+
+  const status = coerceStatus(value);
+  const tone = salesStatusColorPalette[status];
+
+  td.textContent = "";
+
+  const badge = document.createElement("span");
+  badge.className = "ds-sales-status-badge";
+  badge.dataset.tone = tone;
+  badge.textContent = status;
+
+  td.appendChild(badge);
+}
+
+const textColumnHeaderClassName = "ds-ht-column-header";
+const numericColumnHeaderClassName = "ds-ht-column-header ds-ht-column-header--numeric";
+
 const columns: ColumnSettings[] = [
-  { data: "orderId", type: "text", width: 118 },
-  { data: "orderDate", type: "text", width: 118 },
-  { data: "customer", type: "text", width: 220 },
-  { data: "region", type: "text", width: 140 },
-  { data: "rep", type: "text", width: 160 },
-  { data: "category", type: "text", width: 150 },
-  { data: "product", type: "text", width: 220 },
+  {
+    data: "orderId",
+    type: "text",
+    width: 88,
+    className: "ds-ht-cell--order-id",
+    headerClassName: textColumnHeaderClassName,
+  },
+  { data: "orderDate", type: "text", width: 92, headerClassName: textColumnHeaderClassName },
+  { data: "customer", type: "text", width: 135, headerClassName: textColumnHeaderClassName },
+  { data: "region", type: "text", width: 92, headerClassName: textColumnHeaderClassName },
+  { data: "rep", type: "text", width: 106, headerClassName: textColumnHeaderClassName },
+  { data: "category", type: "text", width: 99, headerClassName: textColumnHeaderClassName },
+  { data: "product", type: "text", width: 131, headerClassName: textColumnHeaderClassName },
   {
     data: "quantity",
     type: "numeric",
-    width: 90,
+    width: 59,
+    className: "htRight htNumeric ds-ht-cell--numeric",
+    headerClassName: numericColumnHeaderClassName,
     locale: "ja-JP",
     numericFormat: { maximumFractionDigits: 0, useGrouping: true },
   },
   {
     data: "unitPrice",
     type: "numeric",
-    width: 120,
+    width: 79,
+    className: "htRight htNumeric ds-ht-cell--numeric",
+    headerClassName: numericColumnHeaderClassName,
     locale: "ja-JP",
     numericFormat: {
       style: "currency",
@@ -74,7 +116,10 @@ const columns: ColumnSettings[] = [
   {
     data: "status",
     type: "dropdown",
-    width: 132,
+    width: 87,
+    className: "ds-ht-cell--status",
+    headerClassName: textColumnHeaderClassName,
+    renderer: salesStatusRenderer,
     source: [...salesOrderStatuses],
     strict: true,
     allowInvalid: false,
@@ -196,10 +241,11 @@ export function HandsontableSalesTableClient({
         rowHeaders={false}
         width="100%"
         height="auto"
-        stretchH="none"
+        stretchH="all"
         readOnly={isPending}
         licenseKey="non-commercial-and-evaluation"
         themeName="ht-theme-main"
+        textEllipsis
         afterChange={handleAfterChange}
       />
       {(isPending || saveError) && (
