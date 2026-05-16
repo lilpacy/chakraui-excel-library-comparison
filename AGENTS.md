@@ -30,7 +30,7 @@
 
 ## Development Flow
 
-- After the implementation, please run npm run type-check and after that, git commit.  
+- After the implementation, please run npm run {lint,type-check} and after that, git commit.  
 - Never run npm run build to check after implementation.  
 - Keep each Git commit focused on a single, independent change.  
 
