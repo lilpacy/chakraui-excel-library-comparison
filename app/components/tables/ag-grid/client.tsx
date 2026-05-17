@@ -12,7 +12,7 @@ import type {
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { themeBalham } from "ag-grid-community";
-import { AllEnterpriseModule } from "ag-grid-enterprise";
+import { AllEnterpriseModule, LicenseManager } from "ag-grid-enterprise";
 import { AgGridProvider, AgGridReact } from "ag-grid-react";
 import { updateSalesOrder } from "@/app/actions/sales-orders";
 import {
@@ -34,6 +34,11 @@ type AgGridRow = SalesOrderRow & {
 };
 
 const modules = [AllEnterpriseModule];
+const agGridEnterpriseLicenseKey = process.env.NEXT_PUBLIC_AG_GRID_LICENSE_KEY;
+
+if (agGridEnterpriseLicenseKey) {
+  LicenseManager.setLicenseKey(agGridEnterpriseLicenseKey);
+}
 
 const currencyFormatter = new Intl.NumberFormat("ja-JP", {
   style: "currency",
@@ -328,6 +333,7 @@ export function AgGridSalesTableClient({ initialRows }: AgGridSalesTableClientPr
   const [gridApi, setGridApi] = useState<GridApi<AgGridRow> | null>(null);
   const [hasSelection, setHasSelection] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const isEnterpriseTrial = !agGridEnterpriseLicenseKey;
 
   useEffect(() => {
     setRows(toGridRows(initialRows));
@@ -389,10 +395,16 @@ export function AgGridSalesTableClient({ initialRows }: AgGridSalesTableClientPr
       ...gridApi.getFilterModel(),
       ...filterModel,
     });
+    gridApi.onFilterChanged();
   }
 
   function handleClearFilters() {
-    gridApi?.setFilterModel(null);
+    if (!gridApi) {
+      return;
+    }
+
+    gridApi.setFilterModel(null);
+    gridApi.onFilterChanged();
   }
 
   return (
@@ -416,6 +428,12 @@ export function AgGridSalesTableClient({ initialRows }: AgGridSalesTableClientPr
             <Text fontSize="sm" color="fg.muted">
               セルをドラッグで矩形選択し、選択値で絞り込むか、列ヘッダーのフィルタから値選択できます。
             </Text>
+            {isEnterpriseTrial && (
+              <Text fontSize="xs" color="orange.600" mt="1">
+                AG Grid Enterprise は trial モードです。透かしを消すには
+                `NEXT_PUBLIC_AG_GRID_LICENSE_KEY` を設定してください。
+              </Text>
+            )}
           </Box>
           <HStack gap="2">
             <Button
