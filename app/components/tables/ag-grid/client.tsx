@@ -430,8 +430,9 @@ export function AgGridSalesTableClient({ initialRows }: AgGridSalesTableClientPr
             </Text>
             {isEnterpriseTrial && (
               <Text fontSize="xs" color="orange.600" mt="1">
-                AG Grid Enterprise は trial モードです。透かしを消すには
-                `NEXT_PUBLIC_AG_GRID_LICENSE_KEY` を設定してください。
+                AG Grid Enterprise は trial モードです。
+                `NEXT_PUBLIC_AG_GRID_LICENSE_KEY` を設定すると trial 表示と
+                console warning を解消できます。
               </Text>
             )}
           </Box>
