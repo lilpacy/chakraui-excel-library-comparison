@@ -428,7 +428,7 @@ export function HandsontableSalesTableClient({
         stretchH="none"
         readOnly={isPending}
         filters
-        dropdownMenu
+        dropdownMenu={["filter_by_condition", "filter_by_value", "filter_action_bar"]}
         columnSorting
         fixedColumnsStart={1}
         manualColumnMove
