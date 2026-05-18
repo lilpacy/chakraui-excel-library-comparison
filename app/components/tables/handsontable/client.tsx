@@ -107,6 +107,13 @@ const headerToneBackgroundVars = [
   "var(--ds-color-accent-lime-bg)",
   "var(--ds-color-accent-magenta-bg)",
 ] as const;
+const headerToneClassNameByKey = Object.fromEntries(
+  columnKeys.map((key, index) => [key, headerToneClassNames[index]]),
+) as Record<ColumnKey, (typeof headerToneClassNames)[number]>;
+const headerToneBackgroundVarByKey = Object.fromEntries(
+  columnKeys.map((key, index) => [key, headerToneBackgroundVars[index]]),
+) as Record<ColumnKey, (typeof headerToneBackgroundVars)[number]>;
+const numericColumnKeys = new Set<ColumnKey>(["quantity", "unitPrice"]);
 
 const columns: ColumnSettings[] = [
   {
@@ -242,16 +249,27 @@ function rollbackChanges(
   return columnKeys.map((key) => [physicalRowIndex, key, row[key]]);
 }
 
-function handleAfterGetColHeader(column: number, th: HTMLTableCellElement) {
+function handleAfterGetColHeader(
+  this: HandsontableCore,
+  column: number,
+  th: HTMLTableCellElement,
+) {
   if (column < 0) {
     return;
   }
 
-  th.classList.add(textColumnHeaderClassName, headerToneClassNames[column]);
-  th.style.backgroundColor = headerToneBackgroundVars[column];
-  th.style.textAlign = column === 7 || column === 8 ? "end" : "start";
+  const prop = this.colToProp(column);
 
-  if (column === 7 || column === 8) {
+  if (!isColumnKey(prop)) {
+    return;
+  }
+
+  th.classList.remove(...headerToneClassNames, "ds-ht-column-header--numeric");
+  th.classList.add(textColumnHeaderClassName, headerToneClassNameByKey[prop]);
+  th.style.backgroundColor = headerToneBackgroundVarByKey[prop];
+  th.style.textAlign = numericColumnKeys.has(prop) ? "end" : "start";
+
+  if (numericColumnKeys.has(prop)) {
     th.classList.add("ds-ht-column-header--numeric");
   }
 }
@@ -405,12 +423,14 @@ export function HandsontableSalesTableClient({
         colHeaders={colHeaders}
         rowHeaders={false}
         width="100%"
-        height="auto"
-        stretchH="all"
+        height={360}
+        stretchH="none"
         readOnly={isPending}
         filters
         dropdownMenu
         columnSorting
+        fixedColumnsStart={1}
+        manualColumnMove
         undo
         licenseKey="non-commercial-and-evaluation"
         themeName="ht-theme-main"
