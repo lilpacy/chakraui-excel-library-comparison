@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Box, Container, HStack, Text, VStack } from "@chakra-ui/react";
+import { HandsontableCoreSalesTable } from "@/app/components/tables/handsontable/core";
 import { HandsontableSalesTable } from "@/app/components/tables/handsontable";
 import {
   handsontableFeaturePresets,
@@ -21,9 +22,17 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+type HandsontableEngine = "wrapper" | "core";
+
 type HandsontableOnlyPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function resolveHandsontableEngine(
+  value: string | string[] | undefined,
+): HandsontableEngine {
+  return value === "core" ? "core" : "wrapper";
+}
 
 export default async function HandsontableOnlyPage({
   searchParams,
@@ -31,6 +40,7 @@ export default async function HandsontableOnlyPage({
   const salesRows = await getSalesOrders();
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const presetName = resolveHandsontableFeaturePreset(resolvedSearchParams?.preset);
+  const engine = resolveHandsontableEngine(resolvedSearchParams?.engine);
   const featureProfile = handsontableFeaturePresets[presetName];
 
   return (
@@ -46,14 +56,18 @@ export default async function HandsontableOnlyPage({
               separate Handsontable startup cost from the rest of the comparison page.
             </Text>
             <Text mt="3" fontSize="sm" {...sectionDescriptionProps}>
-              Current preset: <strong>{presetName}</strong>
+              Current preset: <strong>{presetName}</strong> / engine: <strong>{engine}</strong>
             </Text>
             <HStack mt="3" gap="4" wrap="wrap">
               {Object.keys(handsontableFeaturePresets).map((name) => (
-                <Link key={name} href={`/handsontable-only?preset=${name}`}>
+                <Link key={name} href={`/handsontable-only?engine=${engine}&preset=${name}`}>
                   {name}
                 </Link>
               ))}
+            </HStack>
+            <HStack mt="2" gap="4" wrap="wrap">
+              <Link href={`/handsontable-only?engine=wrapper&preset=${presetName}`}>wrapper</Link>
+              <Link href={`/handsontable-only?engine=core&preset=${presetName}`}>core</Link>
             </HStack>
           </Box>
 
@@ -62,13 +76,18 @@ export default async function HandsontableOnlyPage({
               Isolated Grid
             </Text>
             <Text mt="2" {...sectionDescriptionProps}>
-              Compare `preset=full` against `preset=no-menus` and `preset=plain` to determine
-              whether plugin startup or custom rendering is the dominant startup cost.
+              Compare `engine=wrapper` against `engine=core`, and then compare `preset=full`
+              against `preset=plain` to see whether the wrapper layer or Handsontable core is the
+              dominant startup cost.
             </Text>
           </Box>
 
           <Box {...dataGridBoxProps}>
-            <HandsontableSalesTable initialRows={salesRows} featureProfile={featureProfile} />
+            {engine === "core" ? (
+              <HandsontableCoreSalesTable initialRows={salesRows} featureProfile={featureProfile} />
+            ) : (
+              <HandsontableSalesTable initialRows={salesRows} featureProfile={featureProfile} />
+            )}
           </Box>
         </VStack>
       </Container>
