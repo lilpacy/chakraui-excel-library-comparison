@@ -23,6 +23,10 @@ type HandsontableSalesTableClientProps = {
 
 type ColumnKey = keyof SalesOrderRow;
 type HandsontableCore = Parameters<typeof textRenderer>[0];
+type ContextMenuTarget = "cell" | "column-header" | "row-header" | "corner";
+type DropdownMenuPlugin = {
+  open: (position: { left: number; top: number }) => void;
+};
 type UndoRedoPlugin = {
   clear: () => void;
   undo: () => void;
@@ -56,6 +60,30 @@ const colHeaders = [
   "Unit Price",
   "Status",
 ];
+
+const contextMenuItems = [
+  "filter_by_condition",
+  "filter_by_value",
+  "filter_action_bar",
+  "row_above",
+  "row_below",
+  "remove_row",
+  "cut",
+  "copy",
+  "undo",
+  "redo",
+] as const;
+
+const contextMenuKeysByTarget = {
+  cell: new Set(["cut", "copy", "undo", "redo"]),
+  "column-header": new Set([
+    "filter_by_condition",
+    "filter_by_value",
+    "filter_action_bar",
+  ]),
+  "row-header": new Set(["row_above", "row_below", "remove_row"]),
+  corner: new Set(["row_above", "row_below", "remove_row"]),
+} as const;
 
 function salesStatusRenderer(
   instance: HandsontableCore,
@@ -274,9 +302,31 @@ function handleAfterGetColHeader(
   }
 }
 
+function getContextMenuTarget(row: number, column: number): ContextMenuTarget {
+  if (row < 0 && column < 0) {
+    return "corner";
+  }
+
+  if (row < 0) {
+    return "column-header";
+  }
+
+  if (column < 0) {
+    return "row-header";
+  }
+
+  return "cell";
+}
+
 function getUndoRedoPlugin(hotRef: React.RefObject<HotTableRef | null>) {
   return hotRef.current?.hotInstance?.getPlugin("undoRedo") as
     | UndoRedoPlugin
+    | undefined;
+}
+
+function getDropdownMenuPlugin(hotRef: React.RefObject<HotTableRef | null>) {
+  return hotRef.current?.hotInstance?.getPlugin("dropdownMenu") as
+    | DropdownMenuPlugin
     | undefined;
 }
 
@@ -284,6 +334,7 @@ export function HandsontableSalesTableClient({
   initialRows,
 }: HandsontableSalesTableClientProps) {
   const hotRef = useRef<HotTableRef | null>(null);
+  const contextMenuTargetRef = useRef<ContextMenuTarget>("cell");
   const rowsRef = useRef(cloneRows(initialRows));
   const [isPending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -390,6 +441,54 @@ export function HandsontableSalesTableClient({
     });
   }
 
+  function handleBeforeOnCellContextMenu(
+    event: MouseEvent,
+    coords: { row: number; col: number },
+  ) {
+    const contextMenuTarget = getContextMenuTarget(coords.row, coords.col);
+    const hotInstance = hotRef.current?.hotInstance;
+
+    contextMenuTargetRef.current = contextMenuTarget;
+
+    if (!hotInstance) {
+      return;
+    }
+
+    if (contextMenuTarget === "column-header") {
+      hotInstance.selectColumns(coords.col, coords.col, -1);
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      getDropdownMenuPlugin(hotRef)?.open({
+        left: event.clientX,
+        top: event.clientY,
+      });
+      return;
+    }
+
+    if (contextMenuTarget === "row-header") {
+      hotInstance.selectRows(coords.row, coords.row, -1);
+      return;
+    }
+
+    if (contextMenuTarget === "cell") {
+      hotInstance.selectCell(coords.row, coords.col);
+    }
+  }
+
+  function handleBeforeContextMenuSetItems(
+    menuItems: Array<{ key?: string }>,
+  ) {
+    if (contextMenuTargetRef.current === "column-header") {
+      menuItems.splice(0, menuItems.length);
+      return;
+    }
+
+    const allowedKeys = contextMenuKeysByTarget[contextMenuTargetRef.current];
+    const filteredItems = menuItems.filter((item) => item.key && allowedKeys.has(item.key));
+
+    menuItems.splice(0, menuItems.length, ...filteredItems);
+  }
+
   return (
     <Box className={designSystemClassNames.dataGrid}>
       <HStack px="4" py="3" justify="space-between" borderBottomWidth="1px" borderColor="border">
@@ -427,7 +526,7 @@ export function HandsontableSalesTableClient({
         height={360}
         stretchH="none"
         readOnly={isPending}
-        contextMenu={["row_above", "row_below", "remove_row"]}
+        contextMenu={{ items: [...contextMenuItems] }}
         filters
         dropdownMenu={["filter_by_condition", "filter_by_value", "filter_action_bar"]}
         columnSorting
@@ -444,6 +543,8 @@ export function HandsontableSalesTableClient({
         afterRedo={syncUndoRedoState}
         afterUndoStackChange={syncUndoRedoState}
         afterRedoStackChange={syncUndoRedoState}
+        beforeOnCellContextMenu={handleBeforeOnCellContextMenu}
+        beforeContextMenuSetItems={handleBeforeContextMenuSetItems}
       />
       {(isPending || saveError) && (
         <Text px="4" py="3" color={saveError ? "fg.error" : "fg.muted"} fontSize="sm">
