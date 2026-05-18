@@ -421,7 +421,8 @@ export function HandsontableSalesTableClient({
         data={rowsRef.current}
         columns={columns}
         colHeaders={colHeaders}
-        rowHeaders={false}
+        rowHeaders
+        rowHeaderWidth={44}
         width="100%"
         height={360}
         stretchH="none"
