@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Box, Container, Text, VStack } from "@chakra-ui/react";
+import Link from "next/link";
+import { Box, Container, HStack, Text, VStack } from "@chakra-ui/react";
 import { HandsontableSalesTable } from "@/app/components/tables/handsontable";
+import {
+  handsontableFeaturePresets,
+  resolveHandsontableFeaturePreset,
+} from "@/app/components/tables/handsontable/profiles";
 import {
   dataGridBoxProps,
   heroTitleProps,
@@ -16,8 +21,17 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function HandsontableOnlyPage() {
+type HandsontableOnlyPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function HandsontableOnlyPage({
+  searchParams,
+}: HandsontableOnlyPageProps) {
   const salesRows = await getSalesOrders();
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const presetName = resolveHandsontableFeaturePreset(resolvedSearchParams?.preset);
+  const featureProfile = handsontableFeaturePresets[presetName];
 
   return (
     <Box py={{ base: 12, md: 16 }}>
@@ -31,6 +45,16 @@ export default async function HandsontableOnlyPage() {
               This route renders only the Handsontable implementation so browser profiling can
               separate Handsontable startup cost from the rest of the comparison page.
             </Text>
+            <Text mt="3" fontSize="sm" {...sectionDescriptionProps}>
+              Current preset: <strong>{presetName}</strong>
+            </Text>
+            <HStack mt="3" gap="4" wrap="wrap">
+              {Object.keys(handsontableFeaturePresets).map((name) => (
+                <Link key={name} href={`/handsontable-only?preset=${name}`}>
+                  {name}
+                </Link>
+              ))}
+            </HStack>
           </Box>
 
           <Box>
@@ -38,13 +62,13 @@ export default async function HandsontableOnlyPage() {
               Isolated Grid
             </Text>
             <Text mt="2" {...sectionDescriptionProps}>
-              Compare this route against `/` to confirm whether the slowdown is inside
-              Handsontable itself or caused by surrounding grids and page hydration.
+              Compare `preset=full` against `preset=no-menus` and `preset=plain` to determine
+              whether plugin startup or custom rendering is the dominant startup cost.
             </Text>
           </Box>
 
           <Box {...dataGridBoxProps}>
-            <HandsontableSalesTable initialRows={salesRows} />
+            <HandsontableSalesTable initialRows={salesRows} featureProfile={featureProfile} />
           </Box>
         </VStack>
       </Container>

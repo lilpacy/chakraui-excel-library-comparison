@@ -2,9 +2,11 @@
 
 import dynamic from "next/dynamic";
 import type { SalesOrderRow } from "@/app/components/tables/types";
+import type { HandsontableFeatureProfile } from "@/app/components/tables/handsontable/profiles";
 
 type HandsontableSalesTableProps = {
   initialRows: SalesOrderRow[];
+  featureProfile?: HandsontableFeatureProfile;
 };
 
 const HandsontableSalesTableClient = dynamic(

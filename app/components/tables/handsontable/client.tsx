@@ -1,24 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import { HotTable, type HotTableRef } from "@handsontable/react-wrapper";
+import { hasCellType, registerCellType } from "handsontable/cellTypes";
+import { DropdownCellType } from "handsontable/cellTypes/dropdownType";
+import { NumericCellType } from "handsontable/cellTypes/numericType";
 import type { CellChange } from "handsontable/common";
+import { ColumnSorting } from "handsontable/plugins/columnSorting";
+import { ContextMenu } from "handsontable/plugins/contextMenu";
+import { CopyPaste } from "handsontable/plugins/copyPaste";
+import { DropdownMenu } from "handsontable/plugins/dropdownMenu";
+import { Filters } from "handsontable/plugins/filters";
+import { ManualColumnMove } from "handsontable/plugins/manualColumnMove";
+import { registerPlugin } from "handsontable/plugins/registry";
+import { UndoRedo } from "handsontable/plugins/undoRedo";
 import { textRenderer } from "handsontable/renderers/textRenderer";
-import { registerAllModules } from "handsontable/registry";
 import { updateSalesOrder } from "@/app/actions/sales-orders";
 import {
   designSystemClassNames,
   salesStatusColorPalette,
 } from "@/app/design-system/patterns";
+import type { HandsontableFeatureProfile } from "@/app/components/tables/handsontable/profiles";
 import type { SalesOrderRow, SalesOrderStatus } from "@/app/components/tables/types";
 import type { CellProperties, ColumnSettings } from "handsontable/settings";
 import { salesOrderStatuses } from "@/lib/db/schema";
 
-registerAllModules();
-
 type HandsontableSalesTableClientProps = {
   initialRows: SalesOrderRow[];
+  featureProfile?: HandsontableFeatureProfile;
 };
 
 type ColumnKey = keyof SalesOrderRow;
@@ -37,6 +47,44 @@ type UndoRedoPlugin = {
   isUndoAvailable: () => boolean;
   isRedoAvailable: () => boolean;
 };
+
+const defaultFeatureProfile: HandsontableFeatureProfile = {
+  filters: true,
+  dropdownMenu: true,
+  contextMenu: true,
+  columnSorting: true,
+  manualColumnMove: true,
+  undo: true,
+  headerStyling: true,
+  statusRenderer: true,
+};
+
+function registerCellTypeIfNeeded(name: "numeric" | "dropdown") {
+  if (hasCellType(name)) {
+    return;
+  }
+
+  if (name === "numeric") {
+    registerCellType(NumericCellType);
+    return;
+  }
+
+  registerCellType(DropdownCellType);
+}
+
+function registerHandsontableModules() {
+  registerCellTypeIfNeeded("numeric");
+  registerCellTypeIfNeeded("dropdown");
+  registerPlugin(CopyPaste);
+  registerPlugin(Filters);
+  registerPlugin(DropdownMenu);
+  registerPlugin(ContextMenu);
+  registerPlugin(ColumnSorting);
+  registerPlugin(ManualColumnMove);
+  registerPlugin(UndoRedo);
+}
+
+registerHandsontableModules();
 
 const columnKeys: ColumnKey[] = [
   "orderId",
@@ -143,84 +191,86 @@ const headerToneBackgroundVarByKey = Object.fromEntries(
 ) as Record<ColumnKey, (typeof headerToneBackgroundVars)[number]>;
 const numericColumnKeys = new Set<ColumnKey>(["quantity", "unitPrice"]);
 
-const columns: ColumnSettings[] = [
-  {
-    data: "orderId",
-    type: "text",
-    width: 88,
-    className: "ds-ht-cell--order-id",
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-blue`,
-  },
-  {
-    data: "orderDate",
-    type: "text",
-    width: 92,
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-yellow`,
-  },
-  {
-    data: "customer",
-    type: "text",
-    width: 135,
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-green`,
-  },
-  {
-    data: "region",
-    type: "text",
-    width: 92,
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-fuchsia`,
-  },
-  {
-    data: "rep",
-    type: "text",
-    width: 106,
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-aqua`,
-  },
-  {
-    data: "category",
-    type: "text",
-    width: 99,
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-orange`,
-  },
-  {
-    data: "product",
-    type: "text",
-    width: 131,
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-iris`,
-  },
-  {
-    data: "quantity",
-    type: "numeric",
-    width: 59,
-    className: "htRight htNumeric ds-ht-cell--numeric",
-    headerClassName: `${numericColumnHeaderClassName} ds-ht-column-header--tone-red`,
-    locale: "ja-JP",
-    numericFormat: { maximumFractionDigits: 0, useGrouping: true },
-  },
-  {
-    data: "unitPrice",
-    type: "numeric",
-    width: 79,
-    className: "htRight htNumeric ds-ht-cell--numeric",
-    headerClassName: `${numericColumnHeaderClassName} ds-ht-column-header--tone-lime`,
-    locale: "ja-JP",
-    numericFormat: {
-      style: "currency",
-      currency: "JPY",
-      maximumFractionDigits: 0,
+function createColumns(featureProfile: HandsontableFeatureProfile): ColumnSettings[] {
+  return [
+    {
+      data: "orderId",
+      type: "text",
+      width: 88,
+      className: "ds-ht-cell--order-id",
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-blue`,
     },
-  },
-  {
-    data: "status",
-    type: "dropdown",
-    width: 87,
-    className: "ds-ht-cell--status",
-    headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-magenta`,
-    renderer: salesStatusRenderer,
-    source: [...salesOrderStatuses],
-    strict: true,
-    allowInvalid: false,
-  },
-];
+    {
+      data: "orderDate",
+      type: "text",
+      width: 92,
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-yellow`,
+    },
+    {
+      data: "customer",
+      type: "text",
+      width: 135,
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-green`,
+    },
+    {
+      data: "region",
+      type: "text",
+      width: 92,
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-fuchsia`,
+    },
+    {
+      data: "rep",
+      type: "text",
+      width: 106,
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-aqua`,
+    },
+    {
+      data: "category",
+      type: "text",
+      width: 99,
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-orange`,
+    },
+    {
+      data: "product",
+      type: "text",
+      width: 131,
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-iris`,
+    },
+    {
+      data: "quantity",
+      type: "numeric",
+      width: 59,
+      className: "htRight htNumeric ds-ht-cell--numeric",
+      headerClassName: `${numericColumnHeaderClassName} ds-ht-column-header--tone-red`,
+      locale: "ja-JP",
+      numericFormat: { maximumFractionDigits: 0, useGrouping: true },
+    },
+    {
+      data: "unitPrice",
+      type: "numeric",
+      width: 79,
+      className: "htRight htNumeric ds-ht-cell--numeric",
+      headerClassName: `${numericColumnHeaderClassName} ds-ht-column-header--tone-lime`,
+      locale: "ja-JP",
+      numericFormat: {
+        style: "currency",
+        currency: "JPY",
+        maximumFractionDigits: 0,
+      },
+    },
+    {
+      data: "status",
+      type: "dropdown",
+      width: 87,
+      className: "ds-ht-cell--status",
+      headerClassName: `${textColumnHeaderClassName} ds-ht-column-header--tone-magenta`,
+      renderer: featureProfile.statusRenderer ? salesStatusRenderer : undefined,
+      source: [...salesOrderStatuses],
+      strict: true,
+      allowInvalid: false,
+    },
+  ];
+}
 
 function cloneRow(row: SalesOrderRow): SalesOrderRow {
   return { ...row };
@@ -338,21 +388,31 @@ function getContextMenuPlugin(hotRef: React.RefObject<HotTableRef | null>) {
 
 export function HandsontableSalesTableClient({
   initialRows,
+  featureProfile = defaultFeatureProfile,
 }: HandsontableSalesTableClientProps) {
   const hotRef = useRef<HotTableRef | null>(null);
   const contextMenuTargetRef = useRef<ContextMenuTarget>("cell");
   const rowsRef = useRef(cloneRows(initialRows));
+  const columns = createColumns(featureProfile);
   const [isPending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+  const isFilterMenuEnabled = featureProfile.filters && featureProfile.dropdownMenu;
+  const isContextMenuEnabled = featureProfile.contextMenu;
 
-  function syncUndoRedoState() {
+  const syncUndoRedoState = useCallback(() => {
+    if (!featureProfile.undo) {
+      setCanUndo(false);
+      setCanRedo(false);
+      return;
+    }
+
     const undoRedo = getUndoRedoPlugin(hotRef);
 
     setCanUndo(Boolean(undoRedo?.isUndoAvailable()));
     setCanRedo(Boolean(undoRedo?.isRedoAvailable()));
-  }
+  }, [featureProfile.undo]);
 
   useEffect(() => {
     const nextRows = cloneRows(initialRows);
@@ -367,9 +427,13 @@ export function HandsontableSalesTableClient({
     hotInstance?.loadData(nextRows, "external");
     getUndoRedoPlugin(hotRef)?.clear();
     syncUndoRedoState();
-  }, [initialRows]);
+  }, [initialRows, syncUndoRedoState]);
 
   function handleUndo() {
+    if (!featureProfile.undo) {
+      return;
+    }
+
     const undoRedo = getUndoRedoPlugin(hotRef);
 
     if (!undoRedo?.isUndoAvailable()) {
@@ -382,6 +446,10 @@ export function HandsontableSalesTableClient({
   }
 
   function handleRedo() {
+    if (!featureProfile.undo) {
+      return;
+    }
+
     const undoRedo = getUndoRedoPlugin(hotRef);
 
     if (!undoRedo?.isRedoAvailable()) {
@@ -451,6 +519,10 @@ export function HandsontableSalesTableClient({
     event: MouseEvent,
     coords: { row: number; col: number },
   ) {
+    if (!isContextMenuEnabled) {
+      return;
+    }
+
     const contextMenuTarget = getContextMenuTarget(coords.row, coords.col);
     const hotInstance = hotRef.current?.hotInstance;
 
@@ -460,7 +532,7 @@ export function HandsontableSalesTableClient({
       return;
     }
 
-    if (contextMenuTarget === "column-header") {
+    if (contextMenuTarget === "column-header" && isFilterMenuEnabled) {
       hotInstance.selectColumns(coords.col, coords.col, -1);
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -485,6 +557,11 @@ export function HandsontableSalesTableClient({
   function handleBeforeContextMenuSetItems(
     menuItems: Array<{ key?: string }>,
   ) {
+    if (!isContextMenuEnabled) {
+      menuItems.splice(0, menuItems.length);
+      return;
+    }
+
     if (contextMenuTargetRef.current === "column-header") {
       menuItems.splice(0, menuItems.length);
       return;
@@ -498,29 +575,31 @@ export function HandsontableSalesTableClient({
 
   return (
     <Box className={designSystemClassNames.dataGrid}>
-      <HStack px="4" py="3" justify="space-between" borderBottomWidth="1px" borderColor="border">
-        <HStack gap="2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleUndo}
-            disabled={!canUndo || isPending}
-          >
-            Undo
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleRedo}
-            disabled={!canRedo || isPending}
-          >
-            Redo
-          </Button>
+      {featureProfile.undo && (
+        <HStack px="4" py="3" justify="space-between" borderBottomWidth="1px" borderColor="border">
+          <HStack gap="2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleUndo}
+              disabled={!canUndo || isPending}
+            >
+              Undo
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRedo}
+              disabled={!canRedo || isPending}
+            >
+              Redo
+            </Button>
+          </HStack>
+          <Text color="fg.muted" fontSize="sm">
+            Cmd/Ctrl+Z, Cmd/Ctrl+Y
+          </Text>
         </HStack>
-        <Text color="fg.muted" fontSize="sm">
-          Cmd/Ctrl+Z, Cmd/Ctrl+Y
-        </Text>
-      </HStack>
+      )}
       <HotTable
         ref={hotRef}
         className="handsontable-comparison"
@@ -533,25 +612,29 @@ export function HandsontableSalesTableClient({
         height={360}
         stretchH="none"
         readOnly={isPending}
-        contextMenu={{ items: [...contextMenuItems] }}
-        filters
-        dropdownMenu={["filter_by_condition", "filter_by_value", "filter_action_bar"]}
-        columnSorting
+        contextMenu={isContextMenuEnabled ? { items: [...contextMenuItems] } : false}
+        filters={featureProfile.filters}
+        dropdownMenu={
+          isFilterMenuEnabled
+            ? ["filter_by_condition", "filter_by_value", "filter_action_bar"]
+            : false
+        }
+        columnSorting={featureProfile.columnSorting}
         fixedColumnsStart={1}
-        manualColumnMove
-        undo
+        manualColumnMove={featureProfile.manualColumnMove}
+        undo={featureProfile.undo}
         licenseKey="non-commercial-and-evaluation"
         themeName="ht-theme-main"
         textEllipsis
         afterChange={handleAfterChange}
-        afterGetColHeader={handleAfterGetColHeader}
+        afterGetColHeader={featureProfile.headerStyling ? handleAfterGetColHeader : undefined}
         afterInit={syncUndoRedoState}
-        afterUndo={syncUndoRedoState}
-        afterRedo={syncUndoRedoState}
-        afterUndoStackChange={syncUndoRedoState}
-        afterRedoStackChange={syncUndoRedoState}
-        beforeOnCellContextMenu={handleBeforeOnCellContextMenu}
-        beforeContextMenuSetItems={handleBeforeContextMenuSetItems}
+        afterUndo={featureProfile.undo ? syncUndoRedoState : undefined}
+        afterRedo={featureProfile.undo ? syncUndoRedoState : undefined}
+        afterUndoStackChange={featureProfile.undo ? syncUndoRedoState : undefined}
+        afterRedoStackChange={featureProfile.undo ? syncUndoRedoState : undefined}
+        beforeOnCellContextMenu={isContextMenuEnabled ? handleBeforeOnCellContextMenu : undefined}
+        beforeContextMenuSetItems={isContextMenuEnabled ? handleBeforeContextMenuSetItems : undefined}
       />
       {(isPending || saveError) && (
         <Text px="4" py="3" color={saveError ? "fg.error" : "fg.muted"} fontSize="sm">
