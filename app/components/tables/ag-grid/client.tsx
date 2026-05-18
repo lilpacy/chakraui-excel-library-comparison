@@ -8,6 +8,9 @@ import type {
   ColDef,
   GridApi,
   GridReadyEvent,
+  IMultiFilterModel,
+  INumberFilterParams,
+  ITextFilterParams,
   SetFilterModel,
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
@@ -51,6 +54,26 @@ const headerToneClassNames = salesTableHeaderToneSequence.slice(0, 10).map(
 );
 
 const numericHeaderClassName = "ag-grid-header-cell--numeric";
+const textFilterParams: ITextFilterParams = {
+  defaultOption: "contains",
+  filterOptions: ["contains", "equals", "startsWith", "endsWith"],
+};
+const numberFilterParams: INumberFilterParams = {
+  defaultOption: "equals",
+  filterOptions: ["equals", "greaterThan", "lessThan", "inRange"],
+};
+const textOrSetFilterParams = {
+  filters: [
+    { filter: "agTextColumnFilter", filterParams: textFilterParams },
+    { filter: "agSetColumnFilter" },
+  ],
+};
+const numberOrSetFilterParams = {
+  filters: [
+    { filter: "agNumberColumnFilter", filterParams: numberFilterParams },
+    { filter: "agSetColumnFilter" },
+  ],
+};
 
 const gridTheme = themeBalham.withParams({
   accentColor: "var(--ds-color-accent-blue-hover)",
@@ -85,7 +108,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "orderId",
     headerName: "Order ID",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 77,
     cellClass: "ag-grid-order-id",
     headerClass: headerToneClassNames[0],
@@ -94,7 +118,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "orderDate",
     headerName: "Date",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 92,
     headerClass: headerToneClassNames[1],
   },
@@ -102,7 +127,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "customer",
     headerName: "Customer",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 181,
     headerClass: headerToneClassNames[2],
   },
@@ -110,7 +136,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "region",
     headerName: "Region",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 81,
     headerClass: headerToneClassNames[3],
   },
@@ -118,7 +145,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "rep",
     headerName: "Sales Rep",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 96,
     headerClass: headerToneClassNames[4],
   },
@@ -126,7 +154,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "category",
     headerName: "Category",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 86,
     headerClass: headerToneClassNames[5],
   },
@@ -134,7 +163,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "product",
     headerName: "Product",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 161,
     headerClass: headerToneClassNames[6],
   },
@@ -142,7 +172,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "quantity",
     headerName: "Qty",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: numberOrSetFilterParams,
     width: 42,
     type: "numericColumn",
     cellEditor: "agNumberCellEditor",
@@ -153,7 +184,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "unitPrice",
     headerName: "Unit Price",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: numberOrSetFilterParams,
     width: 78,
     type: "numericColumn",
     cellEditor: "agNumberCellEditor",
@@ -166,7 +198,8 @@ const columnDefs: ColDef<AgGridRow>[] = [
     field: "status",
     headerName: "Status",
     editable: true,
-    filter: "agSetColumnFilter",
+    filter: "agMultiColumnFilter",
+    filterParams: textOrSetFilterParams,
     width: 80,
     cellEditor: "agSelectCellEditor",
     cellEditorParams: { values: [...salesOrderStatuses] },
@@ -181,7 +214,7 @@ const defaultColDef: ColDef<AgGridRow> = {
   sortable: true,
   filter: true,
   resizable: false,
-  floatingFilter: true,
+  suppressHeaderMenuButton: true,
   suppressKeyboardEvent: (params) => shouldSuppressBulkRangeKey(params, params.api),
 };
 
@@ -309,18 +342,23 @@ function normalizeSetFilterValue(value: unknown) {
   return String(value);
 }
 
-function buildSetFilterModel(api: GridApi<AgGridRow>) {
+function buildMultiFilterModel(api: GridApi<AgGridRow>) {
   const valuesByColumn = collectSelectedValuesByColumn(api);
-  const filterModel: Record<string, SetFilterModel> = {};
+  const filterModel: Record<string, IMultiFilterModel> = {};
 
   for (const [colId, values] of valuesByColumn.entries()) {
     if (!values.size) {
       continue;
     }
 
-    filterModel[colId] = {
+    const setFilterModel: SetFilterModel = {
       filterType: "set",
       values: [...values],
+    };
+
+    filterModel[colId] = {
+      filterType: "multi",
+      filterModels: [null, setFilterModel],
     };
   }
 
@@ -385,7 +423,7 @@ export function AgGridSalesTableClient({ initialRows }: AgGridSalesTableClientPr
       return;
     }
 
-    const filterModel = buildSetFilterModel(gridApi);
+    const filterModel = buildMultiFilterModel(gridApi);
 
     if (!Object.keys(filterModel).length) {
       return;
@@ -426,7 +464,7 @@ export function AgGridSalesTableClient({ initialRows }: AgGridSalesTableClientPr
               矩形選択と値フィルタ
             </Text>
             <Text fontSize="sm" color="fg.muted">
-              セルをドラッグで矩形選択し、選択値で絞り込むか、列ヘッダーのフィルタから値選択できます。
+              セルをドラッグで矩形選択して絞り込むか、列ヘッダー右端のフィルタアイコンから入力条件か既存値選択で絞り込めます。
             </Text>
             {isEnterpriseTrial && (
               <Text fontSize="xs" color="orange.600" mt="1">

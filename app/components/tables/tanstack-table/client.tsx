@@ -122,6 +122,10 @@ function getTableMeta(table: TanStackTable<TanStackSalesRow>) {
   return table.options.meta as TanStackSalesTableMeta;
 }
 
+function getFieldName(scope: "filter" | "edit", column: ColumnKey, rowKey?: string) {
+  return rowKey ? `tanstack-${scope}-${column}-${rowKey}` : `tanstack-${scope}-${column}`;
+}
+
 function FilterIcon({ active }: { active: boolean }) {
   return (
     <svg
@@ -180,6 +184,7 @@ function createTextColumn(
             />
             <EditableInput
               {...inputStyles}
+              name={getFieldName("edit", key, row.original.__rowKey)}
               fontFamily={options?.fontFamily}
               fontSize={options?.fontSize}
             />
@@ -222,6 +227,7 @@ function createNumberColumn(
           <Input
             {...inputStyles}
             autoFocus
+            name={getFieldName("edit", key, rowKey)}
             type="number"
             textAlign="end"
             value={value}
@@ -272,6 +278,7 @@ const columns = [
           <Box position="relative">
             <select
               autoFocus
+              name={getFieldName("edit", "status", rowKey)}
               style={selectFieldStyles}
               value={value}
               onBlur={meta.stopEditing}
@@ -549,6 +556,7 @@ export function TanStackSalesTableClient({
                                   </Text>
                                   {meta.filter === "status" ? (
                                     <select
+                                      name={getFieldName("filter", meta.column)}
                                       style={selectFieldStyles}
                                       value={String(filterValue ?? "")}
                                       onChange={(event) =>
@@ -565,6 +573,7 @@ export function TanStackSalesTableClient({
                                   ) : (
                                     <Input
                                       size="sm"
+                                      name={getFieldName("filter", meta.column)}
                                       type={meta.filter === "number" ? "number" : "text"}
                                       value={String(filterValue ?? "")}
                                       placeholder={meta.filter === "number" ? "Equals..." : "Contains..."}

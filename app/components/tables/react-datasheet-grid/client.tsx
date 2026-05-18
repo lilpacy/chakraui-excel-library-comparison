@@ -131,6 +131,7 @@ function toSalesOrderRow(row: GridRow): SalesOrderRow {
 export function ReactDataSheetGridSalesTableClient({
   initialRows,
 }: ReactDataSheetGridSalesTableClientProps) {
+  const gridRootRef = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState(() => toGridRows(initialRows));
   const [isPending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -146,6 +147,28 @@ export function ReactDataSheetGridSalesTableClient({
       hasMountedRef.current = false;
     };
   }, [initialRows]);
+
+  useEffect(() => {
+    if (!isGridReady) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      const fields = gridRootRef.current?.querySelectorAll(".dsg-input, .rdsg-select-input");
+
+      fields?.forEach((field, index) => {
+        if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
+          if (!field.name) {
+            field.name = `rdsg-field-${index}`;
+          }
+        }
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [isGridReady, rows]);
 
   const columns = useMemo<Column<GridRow>[]>(() => {
     const currencyColumn = createTextColumn<number | null>({
@@ -326,7 +349,10 @@ export function ReactDataSheetGridSalesTableClient({
   }
 
   return (
-    <Box className={`${designSystemClassNames.dataGrid} react-datasheet-grid-comparison`}>
+    <Box
+      ref={gridRootRef}
+      className={`${designSystemClassNames.dataGrid} react-datasheet-grid-comparison`}
+    >
       {isGridReady ? (
         <DataSheetGrid<GridRow>
           value={rows}
