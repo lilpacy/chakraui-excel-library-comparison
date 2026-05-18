@@ -24,6 +24,9 @@ type HandsontableSalesTableClientProps = {
 type ColumnKey = keyof SalesOrderRow;
 type HandsontableCore = Parameters<typeof textRenderer>[0];
 type ContextMenuTarget = "cell" | "column-header" | "row-header" | "corner";
+type ContextMenuPlugin = {
+  close: () => void;
+};
 type DropdownMenuPlugin = {
   open: (position: { left: number; top: number }) => void;
 };
@@ -65,9 +68,6 @@ const contextMenuItems = [
   "filter_by_condition",
   "filter_by_value",
   "filter_action_bar",
-  "row_above",
-  "row_below",
-  "remove_row",
   "cut",
   "copy",
   "undo",
@@ -81,8 +81,8 @@ const contextMenuKeysByTarget = {
     "filter_by_value",
     "filter_action_bar",
   ]),
-  "row-header": new Set(["row_above", "row_below", "remove_row"]),
-  corner: new Set(["row_above", "row_below", "remove_row"]),
+  "row-header": new Set(["copy", "undo", "redo"]),
+  corner: new Set(["copy", "undo", "redo"]),
 } as const;
 
 function salesStatusRenderer(
@@ -330,6 +330,12 @@ function getDropdownMenuPlugin(hotRef: React.RefObject<HotTableRef | null>) {
     | undefined;
 }
 
+function getContextMenuPlugin(hotRef: React.RefObject<HotTableRef | null>) {
+  return hotRef.current?.hotInstance?.getPlugin("contextMenu") as
+    | ContextMenuPlugin
+    | undefined;
+}
+
 export function HandsontableSalesTableClient({
   initialRows,
 }: HandsontableSalesTableClientProps) {
@@ -458,6 +464,7 @@ export function HandsontableSalesTableClient({
       hotInstance.selectColumns(coords.col, coords.col, -1);
       event.preventDefault();
       event.stopImmediatePropagation();
+      getContextMenuPlugin(hotRef)?.close();
       getDropdownMenuPlugin(hotRef)?.open({
         left: event.clientX,
         top: event.clientY,
