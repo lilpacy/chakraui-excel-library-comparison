@@ -1,7 +1,9 @@
 import Handsontable from "handsontable/base";
 import { hasCellType, registerCellType } from "handsontable/cellTypes";
+import { CheckboxCellType } from "handsontable/cellTypes/checkboxType";
 import { DropdownCellType } from "handsontable/cellTypes/dropdownType";
 import { NumericCellType } from "handsontable/cellTypes/numericType";
+import { AutoColumnSize } from "handsontable/plugins/autoColumnSize";
 import { ColumnSorting } from "handsontable/plugins/columnSorting";
 import {
   ContextMenu,
@@ -10,6 +12,7 @@ import {
 import { CopyPaste } from "handsontable/plugins/copyPaste";
 import { DropdownMenu } from "handsontable/plugins/dropdownMenu";
 import { Filters } from "handsontable/plugins/filters";
+import { HiddenRows } from "handsontable/plugins/hiddenRows";
 import { ManualColumnMove } from "handsontable/plugins/manualColumnMove";
 import { registerPlugin } from "handsontable/plugins/registry";
 import { UndoRedo } from "handsontable/plugins/undoRedo";
@@ -116,8 +119,13 @@ const headerToneBackgroundVarByKey = Object.fromEntries(
 ) as Record<ColumnKey, (typeof headerToneBackgroundVars)[number]>;
 const numericColumnKeys = new Set<ColumnKey>(["quantity", "unitPrice"]);
 
-function registerCellTypeIfNeeded(name: "numeric" | "dropdown") {
+function registerCellTypeIfNeeded(name: "checkbox" | "numeric" | "dropdown") {
   if (hasCellType(name)) {
+    return;
+  }
+
+  if (name === "checkbox") {
+    registerCellType(CheckboxCellType);
     return;
   }
 
@@ -130,13 +138,16 @@ function registerCellTypeIfNeeded(name: "numeric" | "dropdown") {
 }
 
 export function registerHandsontableModules() {
+  registerCellTypeIfNeeded("checkbox");
   registerCellTypeIfNeeded("numeric");
   registerCellTypeIfNeeded("dropdown");
+  registerPlugin(AutoColumnSize);
   registerPlugin(CopyPaste);
-  registerPlugin(Filters);
-  registerPlugin(DropdownMenu);
-  registerPlugin(ContextMenu);
   registerPlugin(ColumnSorting);
+  registerPlugin(ContextMenu);
+  registerPlugin(DropdownMenu);
+  registerPlugin(Filters);
+  registerPlugin(HiddenRows);
   registerPlugin(ManualColumnMove);
   registerPlugin(UndoRedo);
 }
