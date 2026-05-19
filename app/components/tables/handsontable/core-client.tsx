@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import Handsontable from "handsontable/base";
 import type { CellChange } from "handsontable/common";
@@ -16,6 +16,7 @@ import {
   createGridSettings,
   defaultFeatureProfile,
   getContextMenuTarget,
+  gridHeight,
   isColumnKey,
   registerHandsontableModules,
   rollbackChanges,
@@ -117,129 +118,147 @@ export function HandsontableCoreSalesTableClient({
     hotInstance.updateSettings({ readOnly: isPending }, false);
   }, [isPending]);
 
-  useEffect(() => {
-    if (!containerRef.current) {
+  const handleAfterChange = useCallback((changes: CellChange[] | null, source: string) => {
+    const changeSource = String(source);
+
+    if (
+      !changes ||
+      changeSource === "loadData" ||
+      changeSource === "external" ||
+      changeSource === "rollback"
+    ) {
       return;
     }
 
-    const settings = createGridSettings(rowsRef.current, featureProfile);
+    const hotInstance = hotRef.current;
 
-    settings.readOnly = isPending;
-    settings.afterChange = (changes, source) => {
-      const changeSource = String(source);
+    if (!hotInstance) {
+      return;
+    }
 
-      if (
-        !changes ||
-        changeSource === "loadData" ||
-        changeSource === "external" ||
-        changeSource === "rollback"
-      ) {
-        return;
+    const changedPhysicalRows = new Set<number>();
+
+    for (const [rowIndex, prop, oldValue, newValue] of changes) {
+      if (oldValue !== newValue && isColumnKey(prop)) {
+        const physicalRowIndex = hotInstance.toPhysicalRow(rowIndex);
+
+        if (physicalRowIndex >= 0) {
+          changedPhysicalRows.add(physicalRowIndex);
+        }
       }
+    }
 
+    if (changedPhysicalRows.size === 0) {
+      syncUndoRedoState();
+      return;
+    }
+
+    syncUndoRedoState();
+    setSaveError(null);
+
+    startTransition(async () => {
+      for (const physicalRowIndex of changedPhysicalRows) {
+        const previousRow = cloneRow(rowsRef.current[physicalRowIndex]);
+        const nextRow = coerceRow(
+          hotInstance.getSourceDataAtRow(physicalRowIndex) as Partial<SalesOrderRow> &
+            Record<string, unknown>,
+        );
+
+        try {
+          await updateSalesOrder(previousRow.orderId, nextRow);
+          rowsRef.current[physicalRowIndex] = cloneRow(nextRow);
+        } catch (error) {
+          hotInstance.setSourceDataAtCell(
+            rollbackChanges(physicalRowIndex, previousRow),
+            "rollback",
+          );
+          setSaveError(error instanceof Error ? error.message : "Failed to save sales order");
+        }
+      }
+    });
+  }, [startTransition, syncUndoRedoState]);
+
+  const handleBeforeOnCellContextMenu = useCallback(
+    (event: MouseEvent, coords: { row: number; col: number }) => {
       const hotInstance = hotRef.current;
 
       if (!hotInstance) {
         return;
       }
 
-      const changedPhysicalRows = new Set<number>();
+      const contextMenuTarget = getContextMenuTarget(coords.row, coords.col);
 
-      for (const [rowIndex, prop, oldValue, newValue] of changes as CellChange[]) {
-        if (oldValue !== newValue && isColumnKey(prop)) {
-          const physicalRowIndex = hotInstance.toPhysicalRow(rowIndex);
+      contextMenuTargetRef.current = contextMenuTarget;
 
-          if (physicalRowIndex >= 0) {
-            changedPhysicalRows.add(physicalRowIndex);
-          }
-        }
-      }
-
-      if (changedPhysicalRows.size === 0) {
-        syncUndoRedoState();
+      if (contextMenuTarget === "column-header" && isFilterMenuEnabled) {
+        hotInstance.selectColumns(coords.col, coords.col, -1);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        getContextMenuPlugin(hotInstance)?.close();
+        getDropdownMenuPlugin(hotInstance)?.open({
+          left: event.clientX,
+          top: event.clientY,
+        });
         return;
       }
 
-      syncUndoRedoState();
-      setSaveError(null);
+      if (contextMenuTarget === "row-header") {
+        hotInstance.selectRows(coords.row, coords.row, -1);
+        return;
+      }
 
-      startTransition(async () => {
-        for (const physicalRowIndex of changedPhysicalRows) {
-          const previousRow = cloneRow(rowsRef.current[physicalRowIndex]);
-          const nextRow = coerceRow(
-            hotInstance.getSourceDataAtRow(physicalRowIndex) as Partial<SalesOrderRow> &
-              Record<string, unknown>,
-          );
+      if (contextMenuTarget === "cell") {
+        hotInstance.selectCell(coords.row, coords.col);
+      }
+    },
+    [isFilterMenuEnabled],
+  );
 
-          try {
-            await updateSalesOrder(previousRow.orderId, nextRow);
-            rowsRef.current[physicalRowIndex] = cloneRow(nextRow);
-          } catch (error) {
-            hotInstance.setSourceDataAtCell(
-              rollbackChanges(physicalRowIndex, previousRow),
-              "rollback",
-            );
-            setSaveError(error instanceof Error ? error.message : "Failed to save sales order");
-          }
-        }
-      });
-    };
+  const handleBeforeContextMenuSetItems = useCallback((menuItems: Array<{ key?: string }>) => {
+    if (contextMenuTargetRef.current === "column-header") {
+      menuItems.splice(0, menuItems.length);
+      return;
+    }
+
+    const allowedKeys = contextMenuKeysByTarget[contextMenuTargetRef.current];
+    const filteredItems = menuItems.filter((item) => item.key && allowedKeys.has(item.key));
+
+    menuItems.splice(0, menuItems.length, ...filteredItems);
+  }, []);
+
+  const initialSettings = useMemo(() => {
+    const settings = createGridSettings(rowsRef.current, featureProfile);
+
+    settings.readOnly = false;
+    settings.afterChange = handleAfterChange;
     settings.afterInit = syncUndoRedoState;
     settings.afterUndo = featureProfile.undo ? syncUndoRedoState : undefined;
     settings.afterRedo = featureProfile.undo ? syncUndoRedoState : undefined;
     settings.afterUndoStackChange = featureProfile.undo ? syncUndoRedoState : undefined;
     settings.afterRedoStackChange = featureProfile.undo ? syncUndoRedoState : undefined;
     settings.beforeOnCellContextMenu = isContextMenuEnabled
-      ? (event, coords) => {
-          const hotInstance = hotRef.current;
-
-          if (!hotInstance) {
-            return;
-          }
-
-          const contextMenuTarget = getContextMenuTarget(coords.row, coords.col);
-
-          contextMenuTargetRef.current = contextMenuTarget;
-
-          if (contextMenuTarget === "column-header" && isFilterMenuEnabled) {
-            hotInstance.selectColumns(coords.col, coords.col, -1);
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            getContextMenuPlugin(hotInstance)?.close();
-            getDropdownMenuPlugin(hotInstance)?.open({
-              left: event.clientX,
-              top: event.clientY,
-            });
-            return;
-          }
-
-          if (contextMenuTarget === "row-header") {
-            hotInstance.selectRows(coords.row, coords.row, -1);
-            return;
-          }
-
-          if (contextMenuTarget === "cell") {
-            hotInstance.selectCell(coords.row, coords.col);
-          }
-        }
+      ? handleBeforeOnCellContextMenu
       : undefined;
     settings.beforeContextMenuSetItems = isContextMenuEnabled
-      ? (menuItems) => {
-          if (contextMenuTargetRef.current === "column-header") {
-            menuItems.splice(0, menuItems.length);
-            return;
-          }
-
-          const allowedKeys = contextMenuKeysByTarget[contextMenuTargetRef.current];
-          const filteredItems = menuItems.filter(
-            (item) => item.key && allowedKeys.has(item.key),
-          );
-
-          menuItems.splice(0, menuItems.length, ...filteredItems);
-        }
+      ? handleBeforeContextMenuSetItems
       : undefined;
 
-    const hotInstance = new Handsontable.Core(containerRef.current, settings);
+    return settings;
+  }, [
+    featureProfile,
+    handleAfterChange,
+    handleBeforeContextMenuSetItems,
+    handleBeforeOnCellContextMenu,
+    isContextMenuEnabled,
+    syncUndoRedoState,
+  ]);
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    const hotInstance = new Handsontable.Core(containerRef.current, initialSettings);
 
     hotInstance.init();
     hotRef.current = hotInstance as HandsontableInstance;
@@ -250,15 +269,11 @@ export function HandsontableCoreSalesTableClient({
       hotRef.current = null;
     };
   }, [
-    featureProfile,
-    isContextMenuEnabled,
-    isFilterMenuEnabled,
-    isPending,
-    startTransition,
+    initialSettings,
     syncUndoRedoState,
   ]);
 
-  function handleUndo() {
+  const handleUndo = useCallback(() => {
     if (!featureProfile.undo) {
       return;
     }
@@ -272,9 +287,9 @@ export function HandsontableCoreSalesTableClient({
     setSaveError(null);
     undoRedo.undo();
     syncUndoRedoState();
-  }
+  }, [featureProfile.undo, syncUndoRedoState]);
 
-  function handleRedo() {
+  const handleRedo = useCallback(() => {
     if (!featureProfile.undo) {
       return;
     }
@@ -288,7 +303,7 @@ export function HandsontableCoreSalesTableClient({
     setSaveError(null);
     undoRedo.redo();
     syncUndoRedoState();
-  }
+  }, [featureProfile.undo, syncUndoRedoState]);
 
   return (
     <Box className={designSystemClassNames.dataGrid}>
@@ -317,7 +332,7 @@ export function HandsontableCoreSalesTableClient({
           </Text>
         </HStack>
       )}
-      <Box ref={containerRef} className="handsontable-comparison" />
+      <Box ref={containerRef} className="handsontable-comparison" minH={`${gridHeight}px`} />
       {(isPending || saveError) && (
         <Text px="4" py="3" color={saveError ? "fg.error" : "fg.muted"} fontSize="sm">
           {saveError ?? "Saving changes..."}

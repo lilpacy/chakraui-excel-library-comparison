@@ -74,6 +74,17 @@ export const contextMenuItems: readonly PredefinedMenuItemKey[] = [
   "redo",
 ];
 
+export const dropdownMenuItems = [
+  "filter_by_condition",
+  "filter_by_value",
+  "filter_action_bar",
+] as const;
+
+export const gridHeight = 360;
+export const gridRowHeight = 36;
+export const viewportRowRenderingOffset = 8;
+export const viewportColumnRenderingOffset = 2;
+
 export const contextMenuKeysByTarget = {
   cell: new Set(["cut", "copy", "undo", "redo"]),
   "column-header": new Set([
@@ -368,11 +379,15 @@ export function createGridSettings(
     rowHeaders: true,
     rowHeaderWidth: 44,
     width: "100%",
-    height: 360,
+    height: gridHeight,
+    rowHeights: gridRowHeight,
     stretchH: "none",
     fixedColumnsStart: 1,
     autoRowSize: false,
     autoColumnSize: false,
+    renderAllRows: false,
+    viewportRowRenderingOffset,
+    viewportColumnRenderingOffset,
     licenseKey: "non-commercial-and-evaluation",
     themeName: "ht-theme-main",
     textEllipsis: true,
@@ -380,7 +395,7 @@ export function createGridSettings(
     filters: featureProfile.filters,
     dropdownMenu:
       featureProfile.filters && featureProfile.dropdownMenu
-        ? ["filter_by_condition", "filter_by_value", "filter_action_bar"]
+        ? [...dropdownMenuItems]
         : false,
     columnSorting: featureProfile.columnSorting,
     manualColumnMove: featureProfile.manualColumnMove,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import { HotTable, type HotTableRef } from "@handsontable/react-wrapper";
 import type { CellChange } from "handsontable/common";
@@ -17,12 +17,17 @@ import {
   contextMenuKeysByTarget,
   createColumns,
   defaultFeatureProfile,
+  dropdownMenuItems,
   getContextMenuTarget,
+  gridHeight,
+  gridRowHeight,
   handleAfterGetColHeader,
   isColumnKey,
   registerHandsontableModules,
   rollbackChanges,
   rowsEqual,
+  viewportColumnRenderingOffset,
+  viewportRowRenderingOffset,
 } from "@/app/components/tables/handsontable/shared";
 
 type HandsontableSalesTableClientProps = {
@@ -71,13 +76,21 @@ export function HandsontableSalesTableClient({
   const hotRef = useRef<HotTableRef | null>(null);
   const contextMenuTargetRef = useRef<ContextMenuTarget>("cell");
   const rowsRef = useRef(cloneRows(initialRows));
-  const columns = createColumns(featureProfile);
   const [isPending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const isFilterMenuEnabled = featureProfile.filters && featureProfile.dropdownMenu;
   const isContextMenuEnabled = featureProfile.contextMenu;
+  const columns = useMemo(() => createColumns(featureProfile), [featureProfile]);
+  const contextMenuSettings = useMemo(
+    () => (isContextMenuEnabled ? { items: [...contextMenuItems] } : false),
+    [isContextMenuEnabled],
+  );
+  const dropdownMenuSettings = useMemo(
+    () => (isFilterMenuEnabled ? [...dropdownMenuItems] : false),
+    [isFilterMenuEnabled],
+  );
 
   const syncUndoRedoState = useCallback(() => {
     if (!featureProfile.undo) {
@@ -107,7 +120,7 @@ export function HandsontableSalesTableClient({
     syncUndoRedoState();
   }, [initialRows, syncUndoRedoState]);
 
-  function handleUndo() {
+  const handleUndo = useCallback(() => {
     if (!featureProfile.undo) {
       return;
     }
@@ -121,9 +134,9 @@ export function HandsontableSalesTableClient({
     setSaveError(null);
     undoRedo.undo();
     syncUndoRedoState();
-  }
+  }, [featureProfile.undo, syncUndoRedoState]);
 
-  function handleRedo() {
+  const handleRedo = useCallback(() => {
     if (!featureProfile.undo) {
       return;
     }
@@ -137,9 +150,9 @@ export function HandsontableSalesTableClient({
     setSaveError(null);
     undoRedo.redo();
     syncUndoRedoState();
-  }
+  }, [featureProfile.undo, syncUndoRedoState]);
 
-  function handleAfterChange(changes: CellChange[] | null, source: string) {
+  const handleAfterChange = useCallback((changes: CellChange[] | null, source: string) => {
     const changeSource = String(source);
 
     if (
@@ -193,12 +206,12 @@ export function HandsontableSalesTableClient({
         }
       }
     });
-  }
+  }, [startTransition, syncUndoRedoState]);
 
-  function handleBeforeOnCellContextMenu(
+  const handleBeforeOnCellContextMenu = useCallback((
     event: MouseEvent,
     coords: { row: number; col: number },
-  ) {
+  ) => {
     if (!isContextMenuEnabled) {
       return;
     }
@@ -232,11 +245,11 @@ export function HandsontableSalesTableClient({
     if (contextMenuTarget === "cell") {
       hotInstance.selectCell(coords.row, coords.col);
     }
-  }
+  }, [isContextMenuEnabled, isFilterMenuEnabled]);
 
-  function handleBeforeContextMenuSetItems(
+  const handleBeforeContextMenuSetItems = useCallback((
     menuItems: Array<{ key?: string }>,
-  ) {
+  ) => {
     if (!isContextMenuEnabled) {
       menuItems.splice(0, menuItems.length);
       return;
@@ -251,7 +264,7 @@ export function HandsontableSalesTableClient({
     const filteredItems = menuItems.filter((item) => item.key && allowedKeys.has(item.key));
 
     menuItems.splice(0, menuItems.length, ...filteredItems);
-  }
+  }, [isContextMenuEnabled]);
 
   return (
     <Box className={designSystemClassNames.dataGrid}>
@@ -289,20 +302,22 @@ export function HandsontableSalesTableClient({
         rowHeaders
         rowHeaderWidth={44}
         width="100%"
-        height={360}
+        height={gridHeight}
+        rowHeights={gridRowHeight}
         stretchH="none"
         readOnly={isPending}
-        contextMenu={isContextMenuEnabled ? { items: [...contextMenuItems] } : false}
+        contextMenu={contextMenuSettings}
         filters={featureProfile.filters}
-        dropdownMenu={
-          isFilterMenuEnabled
-            ? ["filter_by_condition", "filter_by_value", "filter_action_bar"]
-            : false
-        }
+        dropdownMenu={dropdownMenuSettings}
         columnSorting={featureProfile.columnSorting}
         fixedColumnsStart={1}
         manualColumnMove={featureProfile.manualColumnMove}
         undo={featureProfile.undo}
+        autoRowSize={false}
+        autoColumnSize={false}
+        renderAllRows={false}
+        viewportRowRenderingOffset={viewportRowRenderingOffset}
+        viewportColumnRenderingOffset={viewportColumnRenderingOffset}
         licenseKey="non-commercial-and-evaluation"
         themeName="ht-theme-main"
         textEllipsis
